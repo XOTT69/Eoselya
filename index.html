@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>єОселя — Трекер іпотеки</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div>
+        <h1>єОселя — трекер платежів</h1>
+        <p class="subtitle">1 000 000 грн • 7% річних • 20 років</p>
+      </div>
+      <button id="resetPaidBtn" class="danger-btn">Скинути відмітки</button>
+    </header>
+
+    <section class="summary-grid">
+      <div class="card">
+        <div class="card-label">Початкова сума</div>
+        <div class="card-value" id="initialAmount">—</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Залишок тіла</div>
+        <div class="card-value" id="remainingPrincipal">—</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Сплачено всього</div>
+        <div class="card-value" id="paidTotal">—</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Сплачено тіла</div>
+        <div class="card-value" id="paidPrincipal">—</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Сплачено %</div>
+        <div class="card-value" id="paidInterest">—</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Лишилось сплатити</div>
+        <div class="card-value" id="remainingTotal">—</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Закрито платежів</div>
+        <div class="card-value" id="paidMonths">—</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Наступний платіж</div>
+        <div class="card-value small" id="nextPayment">—</div>
+      </div>
+    </section>
+
+    <section class="progress-card">
+      <div class="progress-head">
+        <span>Прогрес погашення тіла</span>
+        <span id="progressText">0%</span>
+      </div>
+      <div class="progress-bar">
+        <div id="progressFill" class="progress-fill"></div>
+      </div>
+    </section>
+
+    <section class="chart-card">
+      <div class="section-title-row">
+        <h2>Графік по місяцях</h2>
+        <div class="legend">
+          <span><i class="legend-box principal"></i> Тіло</span>
+          <span><i class="legend-box interest"></i> Відсотки</span>
+        </div>
+      </div>
+      <div id="scheduleChart" class="schedule-chart"></div>
+    </section>
+
+    <section class="table-card">
+      <div class="section-title-row with-tools">
+        <h2>Графік платежів</h2>
+        <input type="text" id="searchInput" placeholder="Пошук по даті..." />
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Сплачено</th>
+              <th>Дата</th>
+              <th>Капітал</th>
+              <th>Погашення %</th>
+              <th>Сума</th>
+              <th>Залишок тіла</th>
+            </tr>
+          </thead>
+          <tbody id="paymentsTable"></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
