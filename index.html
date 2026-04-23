@@ -3,117 +3,241 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#f5f6f8" id="themeColorMeta" />
-  <title>єОселя — трекер іпотеки</title>
+  <meta name="theme-color" content="#0f172a" id="themeColorMeta" />
+  <title>єОселя Premium Tracker</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <div class="app">
-    <header class="topbar">
-      <div class="brand">
-        <h1>єОселя — трекер іпотеки</h1>
-        <p class="subtitle">Календар • дострокове • економія на % • JSON/CSV • дата оплати</p>
+  <div class="bg-orb orb-1"></div>
+  <div class="bg-orb orb-2"></div>
+
+  <div class="app-shell">
+    <header class="hero glass">
+      <div class="hero-left">
+        <div class="brand-row">
+          <div class="brand-icon">🏠</div>
+          <div>
+            <h1>єОселя Premium Tracker</h1>
+            <p class="hero-subtitle">
+              Іпотека • дострокове погашення • перерахунок % • економія • мініграфік
+            </p>
+          </div>
+        </div>
+
+        <div class="hero-chips">
+          <span class="chip chip-gold">1 000 000 грн</span>
+          <span class="chip chip-blue">7% річних</span>
+          <span class="chip chip-dark">20 років</span>
+          <span class="chip chip-green">localStorage</span>
+        </div>
       </div>
 
-      <div class="topbar-actions">
-        <button id="themeToggleBtn" class="btn btn-secondary">🌙 Темна тема</button>
+      <div class="hero-actions">
+        <button id="themeToggleBtn" class="btn btn-soft">🌙 Темна тема</button>
         <button id="markTillTodayBtn" class="btn btn-primary">Позначити до сьогодні</button>
-        <button id="exportCsvBtn" class="btn btn-secondary">Експорт CSV</button>
-        <button id="exportJsonBtn" class="btn btn-secondary">Експорт JSON</button>
-        <label class="file-btn">
+        <button id="exportCsvBtn" class="btn btn-soft">CSV</button>
+        <button id="exportJsonBtn" class="btn btn-soft">JSON</button>
+        <label class="btn btn-soft file-label">
           Імпорт JSON
-          <input type="file" id="importJsonInput" accept="application/json" hidden />
+          <input type="file" id="importJsonInput" hidden accept="application/json" />
         </label>
-        <button id="resetPaidBtn" class="btn btn-danger">Скинути все</button>
+        <button id="resetPaidBtn" class="btn btn-danger">Скинути</button>
       </div>
     </header>
 
-    <section class="summary-grid">
-      <div class="card">
-        <div class="card-label">Початкова сума</div>
-        <div class="card-value" id="initialAmount">—</div>
+    <section class="top-stats">
+      <div class="premium-card stat-card highlight">
+        <div class="stat-top">
+          <span class="stat-icon">💳</span>
+          <span class="stat-label">Початкова сума</span>
+        </div>
+        <div class="stat-value" id="initialAmount">—</div>
+        <div class="stat-foot">База для розрахунку</div>
       </div>
-      <div class="card">
-        <div class="card-label">Залишок тіла</div>
-        <div class="card-value" id="remainingPrincipal">—</div>
+
+      <div class="premium-card stat-card">
+        <div class="stat-top">
+          <span class="stat-icon">📉</span>
+          <span class="stat-label">Залишок тіла</span>
+        </div>
+        <div class="stat-value" id="remainingPrincipal">—</div>
+        <div class="stat-foot">Після платежів і дострокових</div>
       </div>
-      <div class="card">
-        <div class="card-label">Сплачено всього</div>
-        <div class="card-value" id="paidTotal">—</div>
+
+      <div class="premium-card stat-card">
+        <div class="stat-top">
+          <span class="stat-icon">💸</span>
+          <span class="stat-label">Сплачено всього</span>
+        </div>
+        <div class="stat-value" id="paidTotal">—</div>
+        <div class="stat-foot">Включно з достроковими</div>
       </div>
-      <div class="card">
-        <div class="card-label">Сплачено тіла</div>
-        <div class="card-value" id="paidPrincipal">—</div>
+
+      <div class="premium-card stat-card">
+        <div class="stat-top">
+          <span class="stat-icon">🧱</span>
+          <span class="stat-label">Сплачено тіла</span>
+        </div>
+        <div class="stat-value" id="paidPrincipal">—</div>
+        <div class="stat-foot">Планове + дострокове</div>
       </div>
-      <div class="card">
-        <div class="card-label">Сплачено %</div>
-        <div class="card-value" id="paidInterest">—</div>
+
+      <div class="premium-card stat-card">
+        <div class="stat-top">
+          <span class="stat-icon">📈</span>
+          <span class="stat-label">Сплачено %</span>
+        </div>
+        <div class="stat-value" id="paidInterest">—</div>
+        <div class="stat-foot">Фактичні нараховані відсотки</div>
       </div>
-      <div class="card">
-        <div class="card-label">Закрито платежів</div>
-        <div class="card-value" id="paidMonths">—</div>
+
+      <div class="premium-card stat-card">
+        <div class="stat-top">
+          <span class="stat-icon">✅</span>
+          <span class="stat-label">Закрито платежів</span>
+        </div>
+        <div class="stat-value" id="paidMonths">—</div>
+        <div class="stat-foot">Кількість закритих місяців</div>
       </div>
-      <div class="card">
-        <div class="card-label">Наступний платіж</div>
-        <div class="card-value small" id="nextPayment">—</div>
+
+      <div class="premium-card stat-card">
+        <div class="stat-top">
+          <span class="stat-icon">📅</span>
+          <span class="stat-label">Наступний платіж</span>
+        </div>
+        <div class="stat-value stat-value-sm" id="nextPayment">—</div>
+        <div class="stat-foot">Найближчий відкритий період</div>
       </div>
-      <div class="card">
-        <div class="card-label">Прогрес</div>
-        <div class="card-value" id="progressText">0%</div>
+
+      <div class="premium-card stat-card gradient">
+        <div class="stat-top">
+          <span class="stat-icon">🚀</span>
+          <span class="stat-label">Прогрес</span>
+        </div>
+        <div class="stat-value" id="progressText">0%</div>
+        <div class="stat-foot">Погашення тіла кредиту</div>
       </div>
     </section>
 
-    <section class="progress-card">
-      <div class="progress-head">
-        <span>Прогрес погашення тіла</span>
-        <span id="progressTextTop">0%</span>
-      </div>
-      <div class="progress-bar">
-        <div id="progressFill" class="progress-fill"></div>
-      </div>
-    </section>
-
-    <section class="grid-2">
-      <section class="table-card">
-        <div class="section-title-row">
-          <h2>Дострокове погашення</h2>
+    <section class="grid-main">
+      <div class="premium-card chart-card">
+        <div class="card-head">
+          <div>
+            <h2>Мініграфік платежів</h2>
+            <p class="muted">Плановий vs новий платіж після дострокових</p>
+          </div>
+          <div class="chart-legend">
+            <span><i class="legend-dot gold"></i> Базовий</span>
+            <span><i class="legend-dot blue"></i> Новий</span>
+          </div>
         </div>
 
-        <div class="prepay-controls">
+        <div class="mini-chart-wrap">
+          <canvas id="miniChart" height="120"></canvas>
+        </div>
+
+        <div class="progress-panel">
+          <div class="progress-head">
+            <span>Прогрес погашення тіла</span>
+            <span id="progressTextTop">0%</span>
+          </div>
+          <div class="progress-bar premium-progress">
+            <div id="progressFill" class="progress-fill"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="premium-card quick-card">
+        <div class="card-head">
+          <div>
+            <h2>Дострокове погашення</h2>
+            <p class="muted">Внесок у тіло, що зменшує майбутні %</p>
+          </div>
+        </div>
+
+        <div class="prepay-form">
           <input type="date" id="prepayDate" />
           <input type="number" id="prepayAmount" min="0" step="0.01" placeholder="Сума, грн" />
-          <button id="addPrepayBtn" class="btn btn-green">Додати дострокове</button>
+          <button id="addPrepayBtn" class="btn btn-success">Додати</button>
         </div>
 
-        <div class="prepay-summary">
-          <div class="pill">Базові %: <strong id="baseInterestTotal">—</strong></div>
-          <div class="pill">Нові %: <strong id="forecastInterestTotal">—</strong></div>
-          <div class="pill">Економія: <strong id="savedInterest" class="saving-good">—</strong></div>
-          <div class="pill">Достроково внесено: <strong id="prepaidTotal">—</strong></div>
+        <div class="quick-prepay">
+          <button class="btn btn-chip quick-prepay-btn" data-amount="10000">+10k</button>
+          <button class="btn btn-chip quick-prepay-btn" data-amount="20000">+20k</button>
+          <button class="btn btn-chip quick-prepay-btn" data-amount="50000">+50k</button>
+        </div>
+
+        <div class="analytics-grid">
+          <div class="mini-analytic">
+            <span class="mini-label">Базові %</span>
+            <strong id="baseInterestTotal">—</strong>
+          </div>
+          <div class="mini-analytic">
+            <span class="mini-label">Нові %</span>
+            <strong id="forecastInterestTotal">—</strong>
+          </div>
+          <div class="mini-analytic success">
+            <span class="mini-label">Економія</span>
+            <strong id="savedInterest">—</strong>
+          </div>
+          <div class="mini-analytic">
+            <span class="mini-label">Достроково внесено</span>
+            <strong id="prepaidTotal">—</strong>
+          </div>
         </div>
 
         <div id="prepayList" class="prepay-list muted">Ще немає дострокових платежів.</div>
-      </section>
+      </div>
+    </section>
 
-      <section class="table-card">
-        <div class="section-title-row">
-          <h2>Календар платежів</h2>
-          <div class="sort-row">
+    <section class="grid-secondary">
+      <div class="premium-card">
+        <div class="card-head">
+          <div>
+            <h2>Календар платежів</h2>
+            <p class="muted">Місячний огляд по датах</p>
+          </div>
+
+          <div class="row-tools">
             <select id="calendarMonth"></select>
             <select id="calendarYear"></select>
           </div>
         </div>
 
         <div class="calendar-grid" id="calendarGrid"></div>
-      </section>
+      </div>
+
+      <div class="premium-card note-card">
+        <div class="card-head">
+          <div>
+            <h2>Пояснення логіки</h2>
+            <p class="muted">Що саме показує трекер</p>
+          </div>
+        </div>
+
+        <div class="explain-box">
+          <p><strong>Базові %</strong> — відсотки з початкового графіка.</p>
+          <p><strong>Нові %</strong> — перераховані відсотки після дострокових.</p>
+          <p><strong>Нова сума</strong> — тіло + нові %.</p>
+          <p><strong>Економія</strong> — різниця між базовими і новими %.</p>
+          <p><strong>Швидкі +10k/+20k/+50k</strong> — це дострокові у тіло, не окрема комісія.</p>
+        </div>
+      </div>
     </section>
 
-    <section class="table-card">
-      <div class="section-title-row">
-        <h2>Графік платежів</h2>
-        <div class="sort-row">
+    <section class="premium-card table-card">
+      <div class="card-head">
+        <div>
+          <h2>Графік платежів</h2>
+          <p class="muted">Повний список місяців із перерахованими платежами</p>
+        </div>
+
+        <div class="table-tools">
           <input type="text" id="searchInput" placeholder="Пошук по даті..." />
-          <label class="pill"><input type="checkbox" id="unpaidOnly" /> Тільки несплачені</label>
+          <label class="toggle-pill">
+            <input type="checkbox" id="unpaidOnly" />
+            <span>Тільки несплачені</span>
+          </label>
           <select id="sortField">
             <option value="date">Дата</option>
             <option value="projectedTotal">Нова сума</option>
