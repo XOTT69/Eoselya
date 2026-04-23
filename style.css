@@ -6,8 +6,13 @@
   --line: #d9dde4;
   --accent: #f2b21b;
   --accent-dark: #d99500;
+  --principal: #ffd15c;
+  --interest: #f39c12;
   --green: #1ea672;
   --green-soft: #e8f8f1;
+  --green-strong: #149864;
+  --blue-soft: #eaf2ff;
+  --blue: #2b6ef2;
   --red: #cf4b4b;
   --shadow: 0 10px 24px rgba(0, 0, 0, 0.06);
 }
@@ -29,7 +34,7 @@ body {
 }
 
 .app {
-  max-width: 1400px;
+  max-width: 1440px;
   margin: 0 auto;
   padding: 20px;
 }
@@ -47,10 +52,22 @@ h1 {
   font-size: 28px;
 }
 
+h2 {
+  margin: 0;
+  font-size: 20px;
+}
+
 .subtitle {
   margin: 0;
   color: var(--muted);
   font-size: 14px;
+}
+
+.topbar-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
 .summary-grid {
@@ -132,20 +149,17 @@ h1 {
   margin-right: 6px;
 }
 
-.legend-box.principal {
-  background: #ffd15c;
-}
-
-.legend-box.interest {
-  background: #f39c12;
-}
+.legend-box.principal { background: var(--principal); }
+.legend-box.interest { background: var(--interest); }
+.legend-box.done { background: var(--green-strong); }
+.legend-box.current { background: var(--blue); }
 
 .schedule-chart {
   margin-top: 18px;
   display: flex;
   gap: 6px;
   align-items: flex-end;
-  min-height: 260px;
+  min-height: 280px;
   overflow-x: auto;
   padding-bottom: 10px;
 }
@@ -158,21 +172,31 @@ h1 {
   justify-content: flex-end;
   align-items: stretch;
   gap: 0;
+  position: relative;
 }
 
 .bar-principal {
-  background: #ffd15c;
-  border-radius: 6px 6px 0 0;
+  background: var(--principal);
 }
 
 .bar-interest {
-  background: #f39c12;
+  background: var(--interest);
+  border-radius: 6px 6px 0 0;
 }
 
 .bar-group.done .bar-principal,
 .bar-group.done .bar-interest {
-  filter: saturate(0.5);
-  opacity: 0.65;
+  filter: saturate(0.7);
+  opacity: 0.55;
+}
+
+.bar-group.current::after {
+  content: "";
+  position: absolute;
+  inset: -6px -3px -6px -3px;
+  border: 2px solid var(--blue);
+  border-radius: 8px;
+  pointer-events: none;
 }
 
 .bar-label {
@@ -189,13 +213,39 @@ h1 {
   margin-bottom: 12px;
 }
 
-#searchInput {
+.filters {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+#searchInput,
+.note-input {
   width: 220px;
   max-width: 100%;
   padding: 10px 12px;
   border: 1px solid var(--line);
   border-radius: 10px;
   outline: none;
+  background: #fff;
+}
+
+.note-input {
+  width: 180px;
+  font-size: 13px;
+}
+
+.toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 14px;
+  background: #f7f8fb;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 12px;
 }
 
 .table-wrap {
@@ -205,7 +255,7 @@ h1 {
 table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 920px;
+  min-width: 1120px;
 }
 
 thead th {
@@ -222,6 +272,7 @@ th, td {
   text-align: right;
   white-space: nowrap;
   font-size: 14px;
+  vertical-align: middle;
 }
 
 th:first-child, td:first-child,
@@ -231,6 +282,14 @@ th:nth-child(2), td:nth-child(2) {
 
 tbody tr.paid-row {
   background: var(--green-soft);
+}
+
+tbody tr.current-row {
+  background: var(--blue-soft);
+}
+
+tbody tr.current-row.paid-row {
+  background: linear-gradient(0deg, var(--green-soft), var(--green-soft)), var(--blue-soft);
 }
 
 tbody tr:hover {
@@ -244,18 +303,44 @@ tbody tr:hover {
   cursor: pointer;
 }
 
-.danger-btn {
+.primary-btn,
+.secondary-btn,
+.danger-btn,
+.file-btn {
   border: none;
-  background: var(--red);
-  color: white;
   padding: 10px 14px;
   border-radius: 10px;
   cursor: pointer;
   font-weight: 700;
+  font-size: 14px;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
 }
 
-.danger-btn:hover {
-  opacity: 0.92;
+.primary-btn {
+  background: var(--blue);
+  color: white;
+}
+
+.secondary-btn,
+.file-btn {
+  background: #eef3ff;
+  color: #1846a3;
+}
+
+.danger-btn {
+  background: var(--red);
+  color: white;
+}
+
+.primary-btn:hover,
+.secondary-btn:hover,
+.danger-btn:hover,
+.file-btn:hover {
+  opacity: 0.94;
 }
 
 @media (max-width: 1100px) {
@@ -264,7 +349,7 @@ tbody tr:hover {
   }
 }
 
-@media (max-width: 720px) {
+@media (max-width: 760px) {
   .app {
     padding: 14px;
   }
@@ -288,7 +373,16 @@ tbody tr:hover {
     font-size: 22px;
   }
 
-  .schedule-chart {
-    min-height: 220px;
+  .topbar-actions {
+    justify-content: stretch;
+  }
+
+  .topbar-actions > * {
+    width: 100%;
+  }
+
+  #searchInput,
+  .note-input {
+    width: 100%;
   }
 }
