@@ -3,116 +3,28 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>єОселя — базовий трекер</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #f5f6f8;
-      color: #1f2328;
-    }
-    .app {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 16px;
-    }
-    h1 {
-      margin: 0 0 6px;
-      font-size: 30px;
-    }
-    .sub {
-      color: #667085;
-      margin-bottom: 16px;
-    }
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 12px;
-      margin-bottom: 16px;
-    }
-    .card {
-      background: #fff;
-      border: 1px solid #d9dde4;
-      border-radius: 14px;
-      padding: 16px;
-    }
-    .label {
-      font-size: 13px;
-      color: #667085;
-      margin-bottom: 8px;
-    }
-    .value {
-      font-size: 28px;
-      font-weight: 700;
-    }
-    .table-wrap {
-      background: #fff;
-      border: 1px solid #d9dde4;
-      border-radius: 14px;
-      overflow: auto;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      min-width: 1050px;
-    }
-    th, td {
-      padding: 10px 12px;
-      border-bottom: 1px solid #e6e9ef;
-      text-align: right;
-      white-space: nowrap;
-    }
-    th {
-      background: #fff8df;
-    }
-    th:first-child, td:first-child,
-    th:nth-child(2), td:nth-child(2),
-    th:nth-child(3), td:nth-child(3) {
-      text-align: center;
-    }
-    input[type="date"], input[type="text"] {
-      padding: 8px;
-      border: 1px solid #cfd5dd;
-      border-radius: 8px;
-    }
-    .paid-row {
-      background: #eaf8f1;
-    }
-    .controls {
-      margin-bottom: 16px;
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-    button {
-      padding: 10px 14px;
-      border: none;
-      border-radius: 10px;
-      cursor: pointer;
-      font-weight: 700;
-      background: #2b6ef2;
-      color: #fff;
-    }
-    .danger { background: #cf4b4b; }
-    @media (max-width: 900px) {
-      .grid { grid-template-columns: 1fr 1fr; }
-    }
-    @media (max-width: 640px) {
-      .grid { grid-template-columns: 1fr; }
-    }
-  </style>
+  <meta name="theme-color" content="#f5f6f8" />
+  <title>єОселя — трекер</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <div class="app">
-    <h1>єОселя — базовий трекер</h1>
-    <div class="sub">Робоча версія з сумами, оплатою і датою оплати</div>
+    <header class="topbar">
+      <div>
+        <h1>єОселя — трекер</h1>
+        <div class="sub">Стабільна версія на окремих файлах</div>
+      </div>
 
-    <div class="controls">
-      <button onclick="markTillToday()">Позначити до сьогодні</button>
-      <button class="danger" onclick="resetAll()">Скинути все</button>
-    </div>
+      <div class="actions">
+        <button id="themeBtn" class="btn secondary">Темна тема</button>
+        <button id="markTodayBtn" class="btn primary">Позначити до сьогодні</button>
+        <button id="exportCsvBtn" class="btn secondary">Експорт CSV</button>
+        <button id="resetBtn" class="btn danger">Скинути все</button>
+      </div>
+    </header>
 
-    <div class="grid">
+    <section class="cards">
       <div class="card">
         <div class="label">Початкова сума</div>
         <div class="value" id="initialAmount">—</div>
@@ -129,218 +41,59 @@
         <div class="label">Сплачено %</div>
         <div class="value" id="paidInterest">—</div>
       </div>
-    </div>
+    </section>
 
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Сплачено</th>
-            <th>Дата оплати</th>
-            <th>Планова дата</th>
-            <th>Тіло</th>
-            <th>%</th>
-            <th>Сума</th>
-            <th>Залишок після</th>
-            <th>Нотатка</th>
-          </tr>
-        </thead>
-        <tbody id="tbody"></tbody>
-      </table>
-    </div>
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Фільтри</h2>
+      </div>
+      <div class="filters">
+        <input id="searchInput" type="text" placeholder="Пошук по даті..." />
+        <label class="checkbox-label">
+          <input id="unpaidOnly" type="checkbox" />
+          Тільки несплачені
+        </label>
+        <select id="sortField">
+          <option value="date">Дата</option>
+          <option value="total">Сума</option>
+          <option value="interest">Відсотки</option>
+          <option value="principal">Тіло</option>
+          <option value="remainingAfter">Залишок</option>
+        </select>
+        <select id="sortDirection">
+          <option value="asc">По зростанню</option>
+          <option value="desc">По спаданню</option>
+        </select>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Графік платежів</h2>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Сплачено</th>
+              <th>Статус</th>
+              <th>Дата оплати</th>
+              <th>Планова дата</th>
+              <th>Тіло</th>
+              <th>%</th>
+              <th>Сума</th>
+              <th>Залишок після</th>
+              <th>Нотатка</th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+    </section>
   </div>
 
-  <script>
-    const STORAGE_PAID = "eoselia_paid_basic";
-    const STORAGE_DATES = "eoselia_dates_basic";
-    const STORAGE_NOTES = "eoselia_notes_basic";
-    const INITIAL_AMOUNT = 1000000;
-
-    const payments = [
-      { date: "25/10/2024", principal: 4167.00, interest: 2868.85, total: 7035.85 },
-      { date: "25/11/2024", principal: 4167.00, interest: 5923.38, total: 10090.38 },
-      { date: "25/12/2024", principal: 4167.00, interest: 5709.02, total: 9876.02 },
-      { date: "25/01/2025", principal: 4167.00, interest: 5873.97, total: 10040.97 },
-      { date: "25/02/2025", principal: 4167.00, interest: 5865.29, total: 10032.29 },
-      { date: "25/03/2025", principal: 4167.00, interest: 5277.16, total: 9444.16 },
-      { date: "25/04/2025", principal: 4167.00, interest: 5815.74, total: 9982.74 },
-      { date: "25/05/2025", principal: 4167.00, interest: 5604.78, total: 9771.78 },
-      { date: "25/06/2025", principal: 4167.00, interest: 5766.19, total: 9933.19 },
-      { date: "25/07/2025", principal: 4167.00, interest: 5556.83, total: 9723.83 },
-      { date: "25/08/2025", principal: 4167.00, interest: 5716.65, total: 9883.65 },
-      { date: "25/09/2025", principal: 4167.00, interest: 5691.87, total: 9858.87 },
-      { date: "25/10/2025", principal: 4167.00, interest: 5484.91, total: 9651.91 },
-      { date: "25/11/2025", principal: 4167.00, interest: 5642.32, total: 9809.32 },
-      { date: "25/12/2025", principal: 4167.00, interest: 5436.96, total: 9603.96 },
-      { date: "25/01/2026", principal: 4167.00, interest: 5592.78, total: 9759.78 },
-      { date: "25/02/2026", principal: 4167.00, interest: 5568.01, total: 9735.01 },
-      { date: "25/03/2026", principal: 4167.00, interest: 5008.65, total: 9175.65 },
-      { date: "25/04/2026", principal: 4167.00, interest: 5518.46, total: 9685.46 },
-      { date: "25/05/2026", principal: 4167.00, interest: 5317.09, total: 9484.09 },
-      { date: "25/06/2026", principal: 4167.00, interest: 5468.91, total: 9635.91 },
-      { date: "25/07/2026", principal: 4167.00, interest: 5269.14, total: 9436.14 },
-      { date: "25/08/2026", principal: 4167.00, interest: 5419.37, total: 9586.37 },
-      { date: "25/09/2026", principal: 4167.00, interest: 5394.59, total: 9561.59 },
-      { date: "25/10/2026", principal: 4167.00, interest: 5197.22, total: 9364.22 },
-      { date: "25/11/2026", principal: 4167.00, interest: 5345.04, total: 9512.04 },
-      { date: "25/12/2026", principal: 4167.00, interest: 5149.27, total: 9316.27 },
-      { date: "25/01/2027", principal: 4167.00, interest: 5295.50, total: 9462.50 },
-      { date: "25/02/2027", principal: 4167.00, interest: 5270.72, total: 9437.72 },
-      { date: "25/03/2027", principal: 4167.00, interest: 4740.13, total: 8907.13 },
-      { date: "25/04/2027", principal: 4167.00, interest: 5221.17, total: 9388.17 },
-      { date: "25/05/2027", principal: 4167.00, interest: 5029.39, total: 9196.39 },
-      { date: "25/06/2027", principal: 4167.00, interest: 5171.63, total: 9338.63 },
-      { date: "25/07/2027", principal: 4167.00, interest: 4981.44, total: 9148.44 },
-      { date: "25/08/2027", principal: 4167.00, interest: 5122.08, total: 9289.08 },
-      { date: "25/09/2027", principal: 4167.00, interest: 5097.30, total: 9264.30 },
-      { date: "25/10/2027", principal: 4167.00, interest: 4909.52, total: 9076.52 },
-      { date: "25/11/2027", principal: 4167.00, interest: 5047.76, total: 9214.76 },
-      { date: "25/12/2027", principal: 4167.00, interest: 4861.57, total: 9028.57 },
-      { date: "25/01/2028", principal: 4167.00, interest: 4998.21, total: 9165.21 },
-      { date: "25/02/2028", principal: 4167.00, interest: 4959.85, total: 9126.85 },
-      { date: "25/03/2028", principal: 4167.00, interest: 4617.99, total: 8784.99 },
-      { date: "25/04/2028", principal: 4167.00, interest: 4910.44, total: 9077.44 },
-      { date: "25/05/2028", principal: 4167.00, interest: 4728.74, total: 8895.74 },
-      { date: "25/06/2028", principal: 4167.00, interest: 4861.02, total: 9028.02 },
-      { date: "25/07/2028", principal: 4167.00, interest: 4689.93, total: 8856.93 },
-      { date: "25/08/2028", principal: 4167.00, interest: 4811.61, total: 8978.61 },
-      { date: "25/09/2028", principal: 4167.00, interest: 4786.91, total: 8953.91 },
-      { date: "25/10/2028", principal: 4167.00, interest: 4609.19, total: 8776.19 },
-      { date: "25/11/2028", principal: 4167.00, interest: 4737.50, total: 8904.50 },
-      { date: "25/12/2028", principal: 4167.00, interest: 4561.38, total: 8728.38 },
-      { date: "15/09/2044", principal: 4087.00, interest: 54.30, total: 4141.30 }
-    ];
-
-    let paidMap = JSON.parse(localStorage.getItem(STORAGE_PAID) || "{}");
-    let paymentDates = JSON.parse(localStorage.getItem(STORAGE_DATES) || "{}");
-    let notesMap = JSON.parse(localStorage.getItem(STORAGE_NOTES) || "{}");
-
-    function formatMoney(v) {
-      return new Intl.NumberFormat("uk-UA", {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-      }).format(v) + " грн";
-    }
-
-    function parseDate(str) {
-      const [d, m, y] = str.split("/").map(Number);
-      return new Date(y, m - 1, d);
-    }
-
-    function todayInput() {
-      const t = new Date();
-      return `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, "0")}-${String(t.getDate()).padStart(2, "0")}`;
-    }
-
-    function buildRows() {
-      let remaining = INITIAL_AMOUNT;
-      return payments.map((p, i) => {
-        remaining = +(remaining - p.principal).toFixed(2);
-        return { ...p, id: i, remainingAfter: Math.max(remaining, 0) };
-      });
-    }
-
-    const rows = buildRows();
-
-    function renderSummary() {
-      const paidRows = rows.filter(r => paidMap[r.id]);
-      const paidTotal = paidRows.reduce((s, r) => s + r.total, 0);
-      const paidInterest = paidRows.reduce((s, r) => s + r.interest, 0);
-      const paidPrincipal = paidRows.reduce((s, r) => s + r.principal, 0);
-      const remainingPrincipal = Math.max(0, INITIAL_AMOUNT - paidPrincipal);
-
-      document.getElementById("initialAmount").textContent = formatMoney(INITIAL_AMOUNT);
-      document.getElementById("remainingPrincipal").textContent = formatMoney(remainingPrincipal);
-      document.getElementById("paidTotal").textContent = formatMoney(paidTotal);
-      document.getElementById("paidInterest").textContent = formatMoney(paidInterest);
-    }
-
-    function renderTable() {
-      const tbody = document.getElementById("tbody");
-      tbody.innerHTML = "";
-
-      rows.forEach(r => {
-        const tr = document.createElement("tr");
-        if (paidMap[r.id]) tr.classList.add("paid-row");
-
-        tr.innerHTML = `
-          <td><input type="checkbox" data-id="${r.id}" ${paidMap[r.id] ? "checked" : ""}></td>
-          <td><input type="date" data-date-id="${r.id}" value="${paymentDates[r.id] || ""}"></td>
-          <td>${r.date}</td>
-          <td>${formatMoney(r.principal)}</td>
-          <td>${formatMoney(r.interest)}</td>
-          <td>${formatMoney(r.total)}</td>
-          <td>${formatMoney(r.remainingAfter)}</td>
-          <td><input type="text" data-note-id="${r.id}" value="${notesMap[r.id] || ""}" placeholder="Нотатка"></td>
-        `;
-        tbody.appendChild(tr);
-      });
-
-      document.querySelectorAll('input[type="checkbox"][data-id]').forEach(el => {
-        el.addEventListener("change", e => {
-          const id = e.target.dataset.id;
-          if (e.target.checked) {
-            paidMap[id] = true;
-            if (!paymentDates[id]) paymentDates[id] = todayInput();
-          } else {
-            delete paidMap[id];
-          }
-          localStorage.setItem(STORAGE_PAID, JSON.stringify(paidMap));
-          localStorage.setItem(STORAGE_DATES, JSON.stringify(paymentDates));
-          render();
-        });
-      });
-
-      document.querySelectorAll('input[type="date"][data-date-id]').forEach(el => {
-        el.addEventListener("change", e => {
-          const id = e.target.dataset.dateId;
-          paymentDates[id] = e.target.value;
-          if (e.target.value) paidMap[id] = true;
-          localStorage.setItem(STORAGE_DATES, JSON.stringify(paymentDates));
-          localStorage.setItem(STORAGE_PAID, JSON.stringify(paidMap));
-          render();
-        });
-      });
-
-      document.querySelectorAll('input[type="text"][data-note-id]').forEach(el => {
-        el.addEventListener("input", e => {
-          const id = e.target.dataset.noteId;
-          notesMap[id] = e.target.value;
-          localStorage.setItem(STORAGE_NOTES, JSON.stringify(notesMap));
-        });
-      });
-    }
-
-    function markTillToday() {
-      const now = new Date();
-      rows.forEach(r => {
-        if (parseDate(r.date) <= now) {
-          paidMap[r.id] = true;
-          if (!paymentDates[r.id]) paymentDates[r.id] = todayInput();
-        }
-      });
-      localStorage.setItem(STORAGE_PAID, JSON.stringify(paidMap));
-      localStorage.setItem(STORAGE_DATES, JSON.stringify(paymentDates));
-      render();
-    }
-
-    function resetAll() {
-      if (!confirm("Скинути всі відмітки, дати та нотатки?")) return;
-      paidMap = {};
-      paymentDates = {};
-      notesMap = {};
-      localStorage.removeItem(STORAGE_PAID);
-      localStorage.removeItem(STORAGE_DATES);
-      localStorage.removeItem(STORAGE_NOTES);
-      render();
-    }
-
-    function render() {
-      renderSummary();
-      renderTable();
-    }
-
-    render();
-  </script>
+  <script src="data.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>
