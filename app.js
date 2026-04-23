@@ -1,24 +1,25 @@
-const STORAGE_PAID = "eoselia_paid_firststyle";
-const STORAGE_DATES = "eoselia_dates_firststyle";
-const STORAGE_NOTES = "eoselia_notes_firststyle";
-const STORAGE_THEME = "eoselia_theme_firststyle";
+const STORAGE_PAID = "eoselia_paid_final_v1";
+const STORAGE_DATES = "eoselia_dates_final_v1";
+const STORAGE_NOTES = "eoselia_notes_final_v1";
+const STORAGE_THEME = "eoselia_theme_final_v1";
 
 let paidMap = JSON.parse(localStorage.getItem(STORAGE_PAID) || "{}");
 let paymentDates = JSON.parse(localStorage.getItem(STORAGE_DATES) || "{}");
 let notesMap = JSON.parse(localStorage.getItem(STORAGE_NOTES) || "{}");
+window.prepayments = window.loadPrepayments ? window.loadPrepayments() : [];
+window.currentSchedule = [];
 
-function formatMoney(v) {
+window.formatMoney = function (v) {
   return new Intl.NumberFormat("uk-UA", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2
   }).format(Number(v || 0)) + " грн";
-}
+};
 
-function parseDate(str) {
-  if (!str || typeof str !== "string") return new Date(0);
+window.parseDate = function (str) {
   const [d, m, y] = str.split("/").map(Number);
-  return new Date(y, (m || 1) - 1, d || 1);
-}
+  return new Date(y, m - 1, d);
+};
 
 function todayInput() {
   const t = new Date();
@@ -31,25 +32,14 @@ function saveState() {
   localStorage.setItem(STORAGE_NOTES, JSON.stringify(notesMap));
 }
 
-function getPaymentsSafe() {
-  if (!Array.isArray(window.PAYMENTS)) return [];
-  return window.PAYMENTS.filter(item =>
-    item &&
-    typeof item.date === "string" &&
-    typeof item.principal !== "undefined" &&
-    typeof item.interest !== "undefined" &&
-    typeof item.total !== "undefined"
-  );
-}
-
-function buildRows() {
-  const source = getPaymentsSafe();
+function buildBaseRows() {
   let remaining = Number(window.INITIAL_AMOUNT || 0);
 
-  return source.map((p, i) => {
-    const principal = Number(p.principal || 0);
+  return (window.PAYMENTS || []).map((p, i) => {
     const interest = Number(p.interest || 0);
+    const principal = Number(p.principal || 0);
     const total = Number(p.total || 0);
+    const monthlyRate = remaining > 0 ? interest / remaining : 0;
 
     remaining = +(remaining - principal).toFixed(2);
 
@@ -59,33 +49,57 @@ function buildRows() {
       principal,
       interest,
       total,
+      monthlyRate,
       remainingAfter: Math.max(remaining, 0)
     };
   });
 }
 
-function getStatus(row) {
-  if (paidMap[row.id]) return "paid";
+function buildProjectedSchedule() {
+  const baseRows = buildBaseRows();
+  let balance = Number(window.INITIAL_AMOUNT || 0);
 
+  return baseRows.map(item => {
+    const prepay = window.getPrepaySumByDate ? window.getPrepaySumByDate(item.date, window.prepayments) : 0;
+    const projectedInterest = Math.max(0, +(balance * item.monthlyRate).toFixed(2));
+    const projectedPrincipal = Math.min(item.principal, balance);
+    const projectedTotal = +(projectedPrincipal + projectedInterest).toFixed(2);
+    const remainingAfterProjected = Math.max(0, +(balance - projectedPrincipal - prepay).toFixed(2));
+
+    const row = {
+      ...item,
+      prepay,
+      projectedInterest,
+      projectedTotal,
+      remainingAfterProjected
+    };
+
+    balance = remainingAfterProjected;
+    return row;
+  });
+}
+
+window.getStatus = function (row) {
+  if (paidMap[row.id]) return "paid";
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-  const payDate = parseDate(row.date);
-  const pay = new Date(payDate.getFullYear(), payDate.getMonth(), payDate.getDate()).getTime();
+  const d = window.parseDate(row.date);
+  const pay = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
   const diff = Math.floor((pay - today) / 86400000);
 
   if (diff < 0) return "overdue";
   if (diff === 0) return "today";
   if (diff <= 7) return "soon";
   return "planned";
-}
+};
 
-function getStatusLabel(status) {
+window.getStatusLabel = function (status) {
   if (status === "paid") return "Сплачено";
   if (status === "overdue") return "Прострочено";
   if (status === "today") return "Сьогодні";
   if (status === "soon") return "Скоро";
   return "Заплановано";
-}
+};
 
 function getStatusBadge(status) {
   if (status === "paid") return "badge-paid";
@@ -104,15 +118,10 @@ function getRowClass(status) {
 }
 
 function getFilteredRows(rows) {
-  const searchEl = document.getElementById("searchInput");
-  const unpaidOnlyEl = document.getElementById("unpaidOnly");
-  const sortFieldEl = document.getElementById("sortField");
-  const sortDirectionEl = document.getElementById("sortDirection");
-
-  const search = (searchEl?.value || "").trim().toLowerCase();
-  const unpaidOnly = !!unpaidOnlyEl?.checked;
-  const sortField = sortFieldEl?.value || "date";
-  const sortDirection = sortDirectionEl?.value || "asc";
+  const search = document.getElementById("searchInput").value.trim().toLowerCase();
+  const unpaidOnly = document.getElementById("unpaidOnly").checked;
+  const sortField = document.getElementById("sortField").value;
+  const sortDirection = document.getElementById("sortDirection").value;
 
   const filtered = rows.filter(row => {
     const okSearch = row.date.toLowerCase().includes(search);
@@ -124,8 +133,8 @@ function getFilteredRows(rows) {
     let x, y;
 
     if (sortField === "date") {
-      x = parseDate(a.date).getTime();
-      y = parseDate(b.date).getTime();
+      x = window.parseDate(a.date).getTime();
+      y = window.parseDate(b.date).getTime();
     } else {
       x = Number(a[sortField] || 0);
       y = Number(b[sortField] || 0);
@@ -137,52 +146,86 @@ function getFilteredRows(rows) {
   return filtered;
 }
 
-function renderSummary(rows) {
-  const paidRows = rows.filter(r => paidMap[r.id]);
-  const paidTotal = paidRows.reduce((s, r) => s + r.total, 0);
-  const paidInterest = paidRows.reduce((s, r) => s + r.interest, 0);
-  const paidPrincipal = paidRows.reduce((s, r) => s + r.principal, 0);
+function renderSummary(schedule) {
+  const paidRows = schedule.filter(r => paidMap[r.id]);
+  const paidTotal = paidRows.reduce((s, r) => s + r.projectedTotal + r.prepay, 0);
+  const paidInterest = paidRows.reduce((s, r) => s + r.projectedInterest, 0);
+  const paidPrincipal = paidRows.reduce((s, r) => s + r.principal + r.prepay, 0);
   const remainingPrincipal = Math.max(0, Number(window.INITIAL_AMOUNT || 0) - paidPrincipal);
-  const nextPayment = rows.find(r => !paidMap[r.id]);
+  const nextPayment = schedule.find(r => !paidMap[r.id]);
   const progress = window.INITIAL_AMOUNT
     ? ((Number(window.INITIAL_AMOUNT) - remainingPrincipal) / Number(window.INITIAL_AMOUNT)) * 100
     : 0;
 
-  document.getElementById("initialAmount").textContent = formatMoney(window.INITIAL_AMOUNT || 0);
-  document.getElementById("remainingPrincipal").textContent = formatMoney(remainingPrincipal);
-  document.getElementById("paidTotal").textContent = formatMoney(paidTotal);
-  document.getElementById("paidPrincipal").textContent = formatMoney(paidPrincipal);
-  document.getElementById("paidInterest").textContent = formatMoney(paidInterest);
-  document.getElementById("paidMonths").textContent = `${paidRows.length} / ${rows.length}`;
+  const baseInterestTotal = schedule.reduce((s, r) => s + r.interest, 0);
+  const forecastInterestTotal = schedule.reduce((s, r) => s + r.projectedInterest, 0);
+  const savedInterest = Math.max(0, baseInterestTotal - forecastInterestTotal);
+
+  document.getElementById("initialAmount").textContent = window.formatMoney(window.INITIAL_AMOUNT || 0);
+  document.getElementById("remainingPrincipal").textContent = window.formatMoney(remainingPrincipal);
+  document.getElementById("paidTotal").textContent = window.formatMoney(paidTotal);
+  document.getElementById("paidPrincipal").textContent = window.formatMoney(paidPrincipal);
+  document.getElementById("paidInterest").textContent = window.formatMoney(paidInterest);
+  document.getElementById("paidMonths").textContent = `${paidRows.length} / ${schedule.length}`;
   document.getElementById("nextPayment").textContent = nextPayment
-    ? `${nextPayment.date} • ${formatMoney(nextPayment.total)}`
+    ? `${nextPayment.date} • ${window.formatMoney(nextPayment.projectedTotal)}`
     : "Кредит погашено";
   document.getElementById("progressText").textContent = `${progress.toFixed(2)}%`;
   document.getElementById("progressTextTop").textContent = `${progress.toFixed(2)}%`;
   document.getElementById("progressFill").style.width = `${Math.min(progress, 100)}%`;
+
+  document.getElementById("baseInterestTotal").textContent = window.formatMoney(baseInterestTotal);
+  document.getElementById("forecastInterestTotal").textContent = window.formatMoney(forecastInterestTotal);
+  document.getElementById("savedInterest").textContent = window.formatMoney(savedInterest);
+  document.getElementById("prepaidTotal").textContent = window.formatMoney(window.totalPrepaid ? window.totalPrepaid(window.prepayments) : 0);
 }
 
-function renderTable(rows) {
+function renderPrepayList() {
+  const el = document.getElementById("prepayList");
+  if (!window.prepayments.length) {
+    el.innerHTML = '<span class="muted">Ще немає дострокових платежів.</span>';
+    return;
+  }
+
+  const sorted = [...window.prepayments].sort((a, b) => new Date(a.rawDate) - new Date(b.rawDate));
+
+  el.innerHTML = sorted.map((item, index) => `
+    <div class="prepay-item">
+      <span>${item.date} — <strong>${window.formatMoney(item.amount)}</strong></span>
+      <button class="btn btn-danger prepay-remove-btn" data-remove-prepay="${index}">Видалити</button>
+    </div>
+  `).join("");
+
+  document.querySelectorAll("[data-remove-prepay]").forEach(btn => {
+    btn.addEventListener("click", e => {
+      const index = Number(e.target.dataset.removePrepay);
+      window.removePrepaymentByIndex(index);
+    });
+  });
+}
+
+function renderTable(schedule) {
   const tbody = document.getElementById("paymentsTable");
   tbody.innerHTML = "";
 
-  const filteredRows = getFilteredRows(rows);
-
-  filteredRows.forEach(row => {
-    const status = getStatus(row);
+  getFilteredRows(schedule).forEach(row => {
+    const status = window.getStatus(row);
     const tr = document.createElement("tr");
     const cls = getRowClass(status);
     if (cls) tr.classList.add(cls);
 
     tr.innerHTML = `
       <td><input type="checkbox" class="pay-checkbox" data-id="${row.id}" ${paidMap[row.id] ? "checked" : ""}></td>
-      <td><span class="status-badge ${getStatusBadge(status)}">${getStatusLabel(status)}</span></td>
+      <td><span class="status-badge ${getStatusBadge(status)}">${window.getStatusLabel(status)}</span></td>
       <td><input type="date" class="paydate-input" data-date-id="${row.id}" value="${paymentDates[row.id] || ""}"></td>
       <td>${row.date}</td>
-      <td>${formatMoney(row.principal)}</td>
-      <td>${formatMoney(row.interest)}</td>
-      <td>${formatMoney(row.total)}</td>
-      <td>${formatMoney(row.remainingAfter)}</td>
+      <td>${window.formatMoney(row.principal)}</td>
+      <td>${window.formatMoney(row.interest)}</td>
+      <td>${window.formatMoney(row.projectedInterest)}</td>
+      <td>${window.formatMoney(row.total)}</td>
+      <td>${window.formatMoney(row.projectedTotal)}</td>
+      <td>${window.formatMoney(row.remainingAfterProjected)}</td>
+      <td>${row.prepay ? window.formatMoney(row.prepay) : "—"}</td>
       <td><input type="text" class="note-input" data-note-id="${row.id}" value="${notesMap[row.id] || ""}" placeholder="Нотатка..."></td>
     `;
     tbody.appendChild(tr);
@@ -198,7 +241,7 @@ function renderTable(rows) {
         delete paidMap[id];
       }
       saveState();
-      render();
+      renderAll();
     });
   });
 
@@ -208,7 +251,7 @@ function renderTable(rows) {
       paymentDates[id] = e.target.value;
       if (e.target.value) paidMap[id] = true;
       saveState();
-      render();
+      renderAll();
     });
   });
 
@@ -221,32 +264,38 @@ function renderTable(rows) {
   });
 }
 
-function exportCSV(rows) {
+function exportCSV(schedule) {
   const header = [
     "Сплачено",
     "Статус",
     "Дата оплати",
     "Планова дата",
     "Тіло",
-    "Відсотки",
-    "Сума",
+    "Базові %",
+    "Перераховані %",
+    "Базова сума",
+    "Нова сума",
     "Залишок після",
+    "Дострокове",
     "Нотатка"
   ];
 
   const lines = [header];
 
-  rows.forEach(row => {
-    const status = getStatus(row);
+  schedule.forEach(row => {
+    const status = window.getStatus(row);
     lines.push([
       paidMap[row.id] ? "Так" : "Ні",
-      getStatusLabel(status),
+      window.getStatusLabel(status),
       paymentDates[row.id] || "",
       row.date,
       row.principal.toFixed(2),
       row.interest.toFixed(2),
+      row.projectedInterest.toFixed(2),
       row.total.toFixed(2),
-      row.remainingAfter.toFixed(2),
+      row.projectedTotal.toFixed(2),
+      row.remainingAfterProjected.toFixed(2),
+      Number(row.prepay || 0).toFixed(2),
       notesMap[row.id] || ""
     ]);
   });
@@ -264,30 +313,68 @@ function exportCSV(rows) {
   URL.revokeObjectURL(url);
 }
 
-function markTillToday() {
-  const rows = buildRows();
-  const now = new Date();
+function exportJSON() {
+  const payload = {
+    paidMap,
+    paymentDates,
+    notesMap,
+    prepayments: window.prepayments,
+    theme: localStorage.getItem(STORAGE_THEME) || "light"
+  };
 
-  rows.forEach(r => {
-    if (parseDate(r.date) <= now) {
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "eoselia-backup.json";
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function importJSON(file) {
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      paidMap = data.paidMap || {};
+      paymentDates = data.paymentDates || {};
+      notesMap = data.notesMap || {};
+      window.prepayments = data.prepayments || [];
+      saveState();
+      if (window.savePrepayments) window.savePrepayments(window.prepayments);
+      if (data.theme) applyTheme(data.theme);
+      renderAll();
+    } catch {
+      alert("Не вдалося імпортувати JSON");
+    }
+  };
+  reader.readAsText(file);
+}
+
+function markTillToday() {
+  const schedule = buildProjectedSchedule();
+  const now = new Date();
+  schedule.forEach(r => {
+    if (window.parseDate(r.date) <= now) {
       paidMap[r.id] = true;
       if (!paymentDates[r.id]) paymentDates[r.id] = todayInput();
     }
   });
-
   saveState();
-  render();
+  renderAll();
 }
 
 function resetAll() {
-  if (!confirm("Скинути всі відмітки, дати та нотатки?")) return;
+  if (!confirm("Скинути всі відмітки, дати, нотатки та дострокові платежі?")) return;
   paidMap = {};
   paymentDates = {};
   notesMap = {};
+  window.prepayments = [];
   localStorage.removeItem(STORAGE_PAID);
   localStorage.removeItem(STORAGE_DATES);
   localStorage.removeItem(STORAGE_NOTES);
-  render();
+  localStorage.removeItem(window.PREPAY_STORAGE_KEY);
+  renderAll();
 }
 
 function applyTheme(theme) {
@@ -295,11 +382,7 @@ function applyTheme(theme) {
   localStorage.setItem(STORAGE_THEME, theme);
   document.getElementById("themeToggleBtn").textContent =
     theme === "dark" ? "☀️ Світла тема" : "🌙 Темна тема";
-
-  const meta = document.getElementById("themeColorMeta");
-  if (meta) {
-    meta.setAttribute("content", theme === "dark" ? "#0f1115" : "#f5f6f8");
-  }
+  document.getElementById("themeColorMeta").setAttribute("content", theme === "dark" ? "#0f1115" : "#f5f6f8");
 }
 
 function toggleTheme() {
@@ -307,24 +390,55 @@ function toggleTheme() {
   applyTheme(current === "dark" ? "light" : "dark");
 }
 
-function render() {
-  const rows = buildRows();
-  renderSummary(rows);
-  renderTable(rows);
+function addPrepayment() {
+  const rawDate = document.getElementById("prepayDate").value;
+  const amount = Number(document.getElementById("prepayAmount").value || 0);
+
+  if (!rawDate || amount <= 0) {
+    alert("Вкажи дату і суму дострокового платежу");
+    return;
+  }
+
+  const [y, m, d] = rawDate.split("-");
+  const date = `${d}/${m}/${y}`;
+
+  window.prepayments.push({
+    rawDate,
+    date,
+    amount
+  });
+
+  if (window.savePrepayments) window.savePrepayments(window.prepayments);
+
+  document.getElementById("prepayDate").value = "";
+  document.getElementById("prepayAmount").value = "";
+  renderAll();
 }
 
-function init() {
-  document.getElementById("themeToggleBtn")?.addEventListener("click", toggleTheme);
-  document.getElementById("markTillTodayBtn")?.addEventListener("click", markTillToday);
-  document.getElementById("exportCsvBtn")?.addEventListener("click", () => exportCSV(buildRows()));
-  document.getElementById("resetPaidBtn")?.addEventListener("click", resetAll);
-  document.getElementById("searchInput")?.addEventListener("input", render);
-  document.getElementById("unpaidOnly")?.addEventListener("change", render);
-  document.getElementById("sortField")?.addEventListener("change", render);
-  document.getElementById("sortDirection")?.addEventListener("change", render);
+window.renderAll = function () {
+  const schedule = buildProjectedSchedule();
+  window.currentSchedule = schedule;
+  renderSummary(schedule);
+  renderPrepayList();
+  renderTable(schedule);
+  if (window.initCalendarSelectors) window.initCalendarSelectors(schedule);
+  if (window.renderCalendar) window.renderCalendar(schedule);
+};
 
-  applyTheme(localStorage.getItem(STORAGE_THEME) || "light");
-  render();
-}
+document.getElementById("themeToggleBtn").addEventListener("click", toggleTheme);
+document.getElementById("markTillTodayBtn").addEventListener("click", markTillToday);
+document.getElementById("exportCsvBtn").addEventListener("click", () => exportCSV(window.currentSchedule || buildProjectedSchedule()));
+document.getElementById("exportJsonBtn").addEventListener("click", exportJSON);
+document.getElementById("resetPaidBtn").addEventListener("click", resetAll);
+document.getElementById("addPrepayBtn").addEventListener("click", addPrepayment);
+document.getElementById("searchInput").addEventListener("input", window.renderAll);
+document.getElementById("unpaidOnly").addEventListener("change", window.renderAll);
+document.getElementById("sortField").addEventListener("change", window.renderAll);
+document.getElementById("sortDirection").addEventListener("change", window.renderAll);
+document.getElementById("importJsonInput").addEventListener("change", e => {
+  const file = e.target.files?.[0];
+  if (file) importJSON(file);
+});
 
-init();
+applyTheme(localStorage.getItem(STORAGE_THEME) || "light");
+window.renderAll();
