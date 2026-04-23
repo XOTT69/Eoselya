@@ -15,8 +15,9 @@ function formatMoney(v) {
 }
 
 function parseDate(str) {
+  if (!str || typeof str !== "string") return new Date(0);
   const [d, m, y] = str.split("/").map(Number);
-  return new Date(y, m - 1, d);
+  return new Date(y, (m || 1) - 1, d || 1);
 }
 
 function todayInput() {
@@ -30,19 +31,46 @@ function saveState() {
   localStorage.setItem(STORAGE_NOTES, JSON.stringify(notesMap));
 }
 
+function getPaymentsSafe() {
+  if (!Array.isArray(window.PAYMENTS)) return [];
+  return window.PAYMENTS.filter(item =>
+    item &&
+    typeof item.date === "string" &&
+    typeof item.principal !== "undefined" &&
+    typeof item.interest !== "undefined" &&
+    typeof item.total !== "undefined"
+  );
+}
+
 function buildRows() {
-  let remaining = INITIAL_AMOUNT;
-  return PAYMENTS.map((p, i) => {
-    remaining = +(remaining - p.principal).toFixed(2);
-    return { ...p, id: i, remainingAfter: Math.max(remaining, 0) };
+  const source = getPaymentsSafe();
+  let remaining = Number(window.INITIAL_AMOUNT || 0);
+
+  return source.map((p, i) => {
+    const principal = Number(p.principal || 0);
+    const interest = Number(p.interest || 0);
+    const total = Number(p.total || 0);
+
+    remaining = +(remaining - principal).toFixed(2);
+
+    return {
+      id: i,
+      date: p.date,
+      principal,
+      interest,
+      total,
+      remainingAfter: Math.max(remaining, 0)
+    };
   });
 }
 
 function getStatus(row) {
   if (paidMap[row.id]) return "paid";
+
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-  const pay = new Date(parseDate(row.date).getFullYear(), parseDate(row.date).getMonth(), parseDate(row.date).getDate()).getTime();
+  const payDate = parseDate(row.date);
+  const pay = new Date(payDate.getFullYear(), payDate.getMonth(), payDate.getDate()).getTime();
   const diff = Math.floor((pay - today) / 86400000);
 
   if (diff < 0) return "overdue";
@@ -76,10 +104,15 @@ function getRowClass(status) {
 }
 
 function getFilteredRows(rows) {
-  const search = document.getElementById("searchInput").value.trim().toLowerCase();
-  const unpaidOnly = document.getElementById("unpaidOnly").checked;
-  const sortField = document.getElementById("sortField").value;
-  const sortDirection = document.getElementById("sortDirection").value;
+  const searchEl = document.getElementById("searchInput");
+  const unpaidOnlyEl = document.getElementById("unpaidOnly");
+  const sortFieldEl = document.getElementById("sortField");
+  const sortDirectionEl = document.getElementById("sortDirection");
+
+  const search = (searchEl?.value || "").trim().toLowerCase();
+  const unpaidOnly = !!unpaidOnlyEl?.checked;
+  const sortField = sortFieldEl?.value || "date";
+  const sortDirection = sortDirectionEl?.value || "asc";
 
   const filtered = rows.filter(row => {
     const okSearch = row.date.toLowerCase().includes(search);
@@ -89,13 +122,15 @@ function getFilteredRows(rows) {
 
   filtered.sort((a, b) => {
     let x, y;
+
     if (sortField === "date") {
       x = parseDate(a.date).getTime();
       y = parseDate(b.date).getTime();
     } else {
-      x = a[sortField];
-      y = b[sortField];
+      x = Number(a[sortField] || 0);
+      y = Number(b[sortField] || 0);
     }
+
     return sortDirection === "asc" ? x - y : y - x;
   });
 
@@ -107,17 +142,21 @@ function renderSummary(rows) {
   const paidTotal = paidRows.reduce((s, r) => s + r.total, 0);
   const paidInterest = paidRows.reduce((s, r) => s + r.interest, 0);
   const paidPrincipal = paidRows.reduce((s, r) => s + r.principal, 0);
-  const remainingPrincipal = Math.max(0, INITIAL_AMOUNT - paidPrincipal);
+  const remainingPrincipal = Math.max(0, Number(window.INITIAL_AMOUNT || 0) - paidPrincipal);
   const nextPayment = rows.find(r => !paidMap[r.id]);
-  const progress = ((INITIAL_AMOUNT - remainingPrincipal) / INITIAL_AMOUNT) * 100;
+  const progress = window.INITIAL_AMOUNT
+    ? ((Number(window.INITIAL_AMOUNT) - remainingPrincipal) / Number(window.INITIAL_AMOUNT)) * 100
+    : 0;
 
-  document.getElementById("initialAmount").textContent = formatMoney(INITIAL_AMOUNT);
+  document.getElementById("initialAmount").textContent = formatMoney(window.INITIAL_AMOUNT || 0);
   document.getElementById("remainingPrincipal").textContent = formatMoney(remainingPrincipal);
   document.getElementById("paidTotal").textContent = formatMoney(paidTotal);
   document.getElementById("paidPrincipal").textContent = formatMoney(paidPrincipal);
   document.getElementById("paidInterest").textContent = formatMoney(paidInterest);
   document.getElementById("paidMonths").textContent = `${paidRows.length} / ${rows.length}`;
-  document.getElementById("nextPayment").textContent = nextPayment ? `${nextPayment.date} • ${formatMoney(nextPayment.total)}` : "Кредит погашено";
+  document.getElementById("nextPayment").textContent = nextPayment
+    ? `${nextPayment.date} • ${formatMoney(nextPayment.total)}`
+    : "Кредит погашено";
   document.getElementById("progressText").textContent = `${progress.toFixed(2)}%`;
   document.getElementById("progressTextTop").textContent = `${progress.toFixed(2)}%`;
   document.getElementById("progressFill").style.width = `${Math.min(progress, 100)}%`;
@@ -127,7 +166,9 @@ function renderTable(rows) {
   const tbody = document.getElementById("paymentsTable");
   tbody.innerHTML = "";
 
-  getFilteredRows(rows).forEach(row => {
+  const filteredRows = getFilteredRows(rows);
+
+  filteredRows.forEach(row => {
     const status = getStatus(row);
     const tr = document.createElement("tr");
     const cls = getRowClass(status);
@@ -226,12 +267,14 @@ function exportCSV(rows) {
 function markTillToday() {
   const rows = buildRows();
   const now = new Date();
+
   rows.forEach(r => {
     if (parseDate(r.date) <= now) {
       paidMap[r.id] = true;
       if (!paymentDates[r.id]) paymentDates[r.id] = todayInput();
     }
   });
+
   saveState();
   render();
 }
@@ -252,7 +295,11 @@ function applyTheme(theme) {
   localStorage.setItem(STORAGE_THEME, theme);
   document.getElementById("themeToggleBtn").textContent =
     theme === "dark" ? "☀️ Світла тема" : "🌙 Темна тема";
-  document.getElementById("themeColorMeta").setAttribute("content", theme === "dark" ? "#0f1115" : "#f5f6f8");
+
+  const meta = document.getElementById("themeColorMeta");
+  if (meta) {
+    meta.setAttribute("content", theme === "dark" ? "#0f1115" : "#f5f6f8");
+  }
 }
 
 function toggleTheme() {
@@ -266,14 +313,18 @@ function render() {
   renderTable(rows);
 }
 
-document.getElementById("themeToggleBtn").addEventListener("click", toggleTheme);
-document.getElementById("markTillTodayBtn").addEventListener("click", markTillToday);
-document.getElementById("exportCsvBtn").addEventListener("click", () => exportCSV(buildRows()));
-document.getElementById("resetPaidBtn").addEventListener("click", resetAll);
-document.getElementById("searchInput").addEventListener("input", render);
-document.getElementById("unpaidOnly").addEventListener("change", render);
-document.getElementById("sortField").addEventListener("change", render);
-document.getElementById("sortDirection").addEventListener("change", render);
+function init() {
+  document.getElementById("themeToggleBtn")?.addEventListener("click", toggleTheme);
+  document.getElementById("markTillTodayBtn")?.addEventListener("click", markTillToday);
+  document.getElementById("exportCsvBtn")?.addEventListener("click", () => exportCSV(buildRows()));
+  document.getElementById("resetPaidBtn")?.addEventListener("click", resetAll);
+  document.getElementById("searchInput")?.addEventListener("input", render);
+  document.getElementById("unpaidOnly")?.addEventListener("change", render);
+  document.getElementById("sortField")?.addEventListener("change", render);
+  document.getElementById("sortDirection")?.addEventListener("change", render);
 
-applyTheme(localStorage.getItem(STORAGE_THEME) || "light");
-render();
+  applyTheme(localStorage.getItem(STORAGE_THEME) || "light");
+  render();
+}
+
+init();
