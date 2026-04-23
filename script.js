@@ -1,4 +1,6 @@
-const STORAGE_KEY = "eoselia_paid_months_v1";
+const STORAGE_KEY = "eoselia_paid_months_v2";
+const NOTES_KEY = "eoselia_payment_notes_v2";
+const INITIAL_AMOUNT = 1000000;
 
 const payments = [
   { date: "25/10/2024", principal: 4167.00, interest: 2868.85, total: 7035.85 },
@@ -20,7 +22,6 @@ const payments = [
   { date: "25/02/2026", principal: 4167.00, interest: 5568.01, total: 9735.01 },
   { date: "25/03/2026", principal: 4167.00, interest: 5008.65, total: 9175.65 },
   { date: "25/04/2026", principal: 4167.00, interest: 5518.46, total: 9685.46 },
-
   { date: "25/05/2026", principal: 4167.00, interest: 5317.09, total: 9484.09 },
   { date: "25/06/2026", principal: 4167.00, interest: 5468.91, total: 9635.91 },
   { date: "25/07/2026", principal: 4167.00, interest: 5269.14, total: 9436.14 },
@@ -55,7 +56,6 @@ const payments = [
   { date: "25/12/2028", principal: 4167.00, interest: 4561.38, total: 8728.38 },
   { date: "25/01/2029", principal: 4167.00, interest: 4688.08, total: 8855.08 },
   { date: "25/02/2029", principal: 4167.00, interest: 4676.15, total: 8843.15 },
-
   { date: "25/03/2029", principal: 4167.00, interest: 4203.10, total: 8370.10 },
   { date: "25/04/2029", principal: 4167.00, interest: 4626.61, total: 8793.61 },
   { date: "25/05/2029", principal: 4167.00, interest: 4454.01, total: 8621.01 },
@@ -252,20 +252,67 @@ function formatMoney(value) {
   }).format(value) + " грн";
 }
 
-function loadPaidMap() {
+function parseDate(dateStr) {
+  const [day, month, year] = dateStr.split("/").map(Number);
+  return new Date(year, month - 1, day);
+}
+
+function currentPaymentId(data) {
+  const now = new Date();
+  const upcoming = data.find(item => parseDate(item.date) >= now && !paidMap[item.id]);
+  if (upcoming) return upcoming.id;
+  const firstUnpaid = data.find(item => !paidMap[item.id]);
+  return firstUnpaid ? firstUnpaid.id : null;
+}
+
+function loadJSON(key, fallback) {
   try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+    return JSON.parse(localStorage.getItem(key)) ?? fallback;
   } catch {
-    return {};
+    return fallback;
   }
 }
 
-function savePaidMap(map) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(map));
+function saveJSON(key, value) {
+  localStorage.setItem(key, JSON.stringify(value));
+}
+
+function exportState() {
+  const payload = {
+    paidMap,
+    notesMap,
+    exportedAt: new Date().toISOString()
+  };
+
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "eoselia-tracker-backup.json";
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function importState(file) {
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const data = JSON.parse(reader.result);
+      paidMap = data.paidMap || {};
+      notesMap = data.notesMap || {};
+      saveJSON(STORAGE_KEY, paidMap);
+      saveJSON(NOTES_KEY, notesMap);
+      renderAll();
+      alert("Імпорт успішний");
+    } catch {
+      alert("Помилка імпорту JSON");
+    }
+  };
+  reader.readAsText(file);
 }
 
 function buildPaymentsData() {
-  let remaining = 1000000;
+  let remaining = INITIAL_AMOUNT;
   return payments.map((item, index) => {
     const before = remaining;
     remaining = Math.max(0, +(remaining - item.principal).toFixed(2));
@@ -279,7 +326,8 @@ function buildPaymentsData() {
 }
 
 const fullData = buildPaymentsData();
-let paidMap = loadPaidMap();
+let paidMap = loadJSON(STORAGE_KEY, {});
+let notesMap = loadJSON(NOTES_KEY, {});
 
 function calculateStats(data) {
   const paidItems = data.filter(item => paidMap[item.id]);
@@ -288,9 +336,9 @@ function calculateStats(data) {
   const paidTotal = paidItems.reduce((sum, item) => sum + item.total, 0);
   const paidPrincipal = paidItems.reduce((sum, item) => sum + item.principal, 0);
   const paidInterest = paidItems.reduce((sum, item) => sum + item.interest, 0);
-  const remainingPrincipal = 1000000 - paidPrincipal;
+  const remainingPrincipal = Math.max(0, INITIAL_AMOUNT - paidPrincipal);
   const remainingTotal = unpaidItems.reduce((sum, item) => sum + item.total, 0);
-  const progress = (paidPrincipal / 1000000) * 100;
+  const progress = (paidPrincipal / INITIAL_AMOUNT) * 100;
   const nextPayment = unpaidItems[0];
 
   return {
@@ -309,7 +357,7 @@ function calculateStats(data) {
 function renderSummary() {
   const stats = calculateStats(fullData);
 
-  document.getElementById("initialAmount").textContent = formatMoney(1000000);
+  document.getElementById("initialAmount").textContent = formatMoney(INITIAL_AMOUNT);
   document.getElementById("remainingPrincipal").textContent = formatMoney(stats.remainingPrincipal);
   document.getElementById("paidTotal").textContent = formatMoney(stats.paidTotal);
   document.getElementById("paidPrincipal").textContent = formatMoney(stats.paidPrincipal);
@@ -324,17 +372,28 @@ function renderSummary() {
   document.getElementById("progressFill").style.width = `${Math.min(stats.progress, 100)}%`;
 }
 
-function renderTable(filter = "") {
+function filteredData() {
+  const filter = (document.getElementById("searchInput").value || "").toLowerCase();
+  const unpaidOnly = document.getElementById("unpaidOnly").checked;
+
+  return fullData.filter(item => {
+    const matchesSearch = item.date.toLowerCase().includes(filter);
+    const matchesUnpaid = unpaidOnly ? !paidMap[item.id] : true;
+    return matchesSearch && matchesUnpaid;
+  });
+}
+
+function renderTable() {
   const tbody = document.getElementById("paymentsTable");
   tbody.innerHTML = "";
 
-  const visible = fullData.filter(item =>
-    item.date.toLowerCase().includes(filter.toLowerCase())
-  );
+  const currentId = currentPaymentId(fullData);
+  const data = filteredData();
 
-  visible.forEach(item => {
+  data.forEach(item => {
     const tr = document.createElement("tr");
     if (paidMap[item.id]) tr.classList.add("paid-row");
+    if (item.id === currentId) tr.classList.add("current-row");
 
     tr.innerHTML = `
       <td>
@@ -350,6 +409,15 @@ function renderTable(filter = "") {
       <td>${formatMoney(item.interest)}</td>
       <td>${formatMoney(item.total)}</td>
       <td>${formatMoney(item.remainingAfter)}</td>
+      <td>
+        <input
+          class="note-input"
+          type="text"
+          placeholder="Нотатка..."
+          data-note-id="${item.id}"
+          value="${(notesMap[item.id] || "").replace(/"/g, "&quot;")}"
+        />
+      </td>
     `;
 
     tbody.appendChild(tr);
@@ -358,10 +426,20 @@ function renderTable(filter = "") {
   document.querySelectorAll(".pay-checkbox").forEach(checkbox => {
     checkbox.addEventListener("change", e => {
       const id = Number(e.target.dataset.id);
-      paidMap[id] = e.target.checked;
-      if (!e.target.checked) delete paidMap[id];
-      savePaidMap(paidMap);
+      if (e.target.checked) paidMap[id] = true;
+      else delete paidMap[id];
+      saveJSON(STORAGE_KEY, paidMap);
       renderAll();
+    });
+  });
+
+  document.querySelectorAll(".note-input").forEach(input => {
+    input.addEventListener("input", e => {
+      const id = Number(e.target.dataset.noteId);
+      const value = e.target.value.trim();
+      if (value) notesMap[id] = value;
+      else delete notesMap[id];
+      saveJSON(NOTES_KEY, notesMap);
     });
   });
 }
@@ -371,7 +449,8 @@ function renderChart() {
   container.innerHTML = "";
 
   const maxTotal = Math.max(...fullData.map(item => item.total));
-  const chartHeight = 220;
+  const chartHeight = 230;
+  const currentId = currentPaymentId(fullData);
 
   fullData.forEach(item => {
     const principalHeight = (item.principal / maxTotal) * chartHeight;
@@ -380,6 +459,7 @@ function renderChart() {
     const group = document.createElement("div");
     group.className = "bar-group";
     if (paidMap[item.id]) group.classList.add("done");
+    if (item.id === currentId) group.classList.add("current");
 
     group.innerHTML = `
       <div class="bar-principal" style="height:${principalHeight}px"></div>
@@ -387,31 +467,57 @@ function renderChart() {
       <div class="bar-label">${item.date.slice(3)}</div>
     `;
 
+    const note = notesMap[item.id] ? `\nНотатка: ${notesMap[item.id]}` : "";
     group.title = `${item.date}
 Тіло: ${formatMoney(item.principal)}
 Відсотки: ${formatMoney(item.interest)}
-Разом: ${formatMoney(item.total)}`;
+Разом: ${formatMoney(item.total)}
+Залишок після платежу: ${formatMoney(item.remainingAfter)}${note}`;
 
     container.appendChild(group);
   });
 }
 
+function markTillToday() {
+  const now = new Date();
+  fullData.forEach(item => {
+    if (parseDate(item.date) <= now) paidMap[item.id] = true;
+  });
+  saveJSON(STORAGE_KEY, paidMap);
+  renderAll();
+}
+
 function renderAll() {
   renderSummary();
-  renderTable(document.getElementById("searchInput").value || "");
+  renderTable();
   renderChart();
 }
 
-document.getElementById("searchInput").addEventListener("input", e => {
-  renderTable(e.target.value);
-});
+document.getElementById("searchInput").addEventListener("input", renderTable);
+document.getElementById("unpaidOnly").addEventListener("change", renderTable);
 
 document.getElementById("resetPaidBtn").addEventListener("click", () => {
-  if (confirm("Точно скинути всі відмітки про оплату?")) {
+  if (confirm("Точно скинути всі відмітки та нотатки?")) {
     paidMap = {};
-    savePaidMap(paidMap);
+    notesMap = {};
+    saveJSON(STORAGE_KEY, paidMap);
+    saveJSON(NOTES_KEY, notesMap);
     renderAll();
   }
+});
+
+document.getElementById("markTillTodayBtn").addEventListener("click", () => {
+  if (confirm("Позначити всі платежі до сьогодні як сплачені?")) {
+    markTillToday();
+  }
+});
+
+document.getElementById("exportBtn").addEventListener("click", exportState);
+
+document.getElementById("importInput").addEventListener("change", e => {
+  const file = e.target.files[0];
+  if (file) importState(file);
+  e.target.value = "";
 });
 
 renderAll();
