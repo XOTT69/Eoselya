@@ -1,138 +1,94 @@
 <!DOCTYPE html>
-<html lang="uk">
+<html lang="uk" data-theme="light">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <meta name="theme-color" content="#0f172a" />
-  <title>єОселя — Dashboard</title>
-  <link rel="manifest" href="manifest.json" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#f5f6f8" id="themeColorMeta" />
+  <title>єОселя — трекер іпотеки</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <div class="app-shell">
-    <header class="topbar glass">
-      <div class="brand-block">
-        <div class="brand-mark">₴</div>
-        <div>
-          <h1>єОселя</h1>
-          <p class="subtext">Сучасний трекер іпотеки</p>
-        </div>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <h1>єОселя — трекер іпотеки</h1>
+        <p class="subtitle">1 000 000 грн • 7% річних • 20 років • дата оплати • localStorage</p>
       </div>
 
-      <div class="top-actions">
-        <button id="themeBtn" class="btn btn-ghost">🌙 Тема</button>
-        <button id="markTodayBtn" class="btn btn-primary">Позначити до сьогодні</button>
+      <div class="topbar-actions">
+        <button id="themeToggleBtn" class="btn btn-secondary">🌙 Темна тема</button>
+        <button id="markTillTodayBtn" class="btn btn-primary">Позначити до сьогодні</button>
         <button id="exportCsvBtn" class="btn btn-secondary">Експорт CSV</button>
-        <button id="resetBtn" class="btn btn-danger">Скинути</button>
+        <button id="resetPaidBtn" class="btn btn-danger">Скинути все</button>
       </div>
     </header>
 
-    <section class="hero">
-      <div class="hero-card hero-main">
-        <div class="hero-label">Активний кредит</div>
-        <div class="hero-title">1 000 000 грн</div>
-        <div class="hero-meta">20 років • 7% річних • фіксоване тіло 4 167 грн</div>
+    <section class="summary-grid">
+      <div class="card">
+        <div class="card-label">Початкова сума</div>
+        <div class="card-value" id="initialAmount">—</div>
       </div>
-
-      <div class="hero-card hero-side">
-        <div class="hero-side-label">Статус</div>
-        <div class="hero-side-value" id="statusSummary">—</div>
-        <div class="hero-side-sub">Оновлюється автоматично</div>
+      <div class="card">
+        <div class="card-label">Залишок тіла</div>
+        <div class="card-value" id="remainingPrincipal">—</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Сплачено всього</div>
+        <div class="card-value" id="paidTotal">—</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Сплачено тіла</div>
+        <div class="card-value" id="paidPrincipal">—</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Сплачено %</div>
+        <div class="card-value" id="paidInterest">—</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Закрито платежів</div>
+        <div class="card-value" id="paidMonths">—</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Наступний платіж</div>
+        <div class="card-value small" id="nextPayment">—</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Прогрес</div>
+        <div class="card-value" id="progressText">0%</div>
       </div>
     </section>
 
-    <section class="stats-grid">
-      <div class="stat-card glass">
-        <span class="stat-label">Початкова сума</span>
-        <strong class="stat-value" id="initialAmount">—</strong>
+    <section class="progress-card">
+      <div class="progress-head">
+        <span>Прогрес погашення тіла</span>
+        <span id="progressTextTop">0%</span>
       </div>
-      <div class="stat-card glass">
-        <span class="stat-label">Залишок тіла</span>
-        <strong class="stat-value" id="remainingPrincipal">—</strong>
-      </div>
-      <div class="stat-card glass">
-        <span class="stat-label">Сплачено всього</span>
-        <strong class="stat-value" id="paidTotal">—</strong>
-      </div>
-      <div class="stat-card glass">
-        <span class="stat-label">Сплачено %</span>
-        <strong class="stat-value" id="paidInterest">—</strong>
+      <div class="progress-bar">
+        <div id="progressFill" class="progress-fill"></div>
       </div>
     </section>
 
-    <section class="content-grid">
-      <div class="panel glass">
-        <div class="panel-head">
-          <div>
-            <h2>Фільтри</h2>
-            <p class="panel-sub">Швидкий пошук по графіку</p>
-          </div>
-        </div>
-
-        <div class="filter-grid">
-          <input id="searchInput" class="ui-input" type="text" placeholder="Пошук по даті..." />
-          <label class="ui-check">
-            <input id="unpaidOnly" type="checkbox" />
-            <span>Тільки несплачені</span>
-          </label>
-          <select id="sortField" class="ui-input">
+    <section class="table-card">
+      <div class="section-title-row">
+        <h2>Графік платежів</h2>
+        <div class="sort-row">
+          <input type="text" id="searchInput" placeholder="Пошук по даті..." />
+          <label class="pill"><input type="checkbox" id="unpaidOnly" /> Тільки несплачені</label>
+          <select id="sortField">
             <option value="date">Дата</option>
             <option value="total">Сума</option>
             <option value="interest">Відсотки</option>
             <option value="principal">Тіло</option>
             <option value="remainingAfter">Залишок</option>
           </select>
-          <select id="sortDirection" class="ui-input">
+          <select id="sortDirection">
             <option value="asc">По зростанню</option>
             <option value="desc">По спаданню</option>
           </select>
         </div>
       </div>
 
-      <div class="panel glass">
-        <div class="panel-head">
-          <div>
-            <h2>Огляд</h2>
-            <p class="panel-sub">Швидка інформація по стану платежів</p>
-          </div>
-        </div>
-
-        <div class="mini-stats">
-          <div class="mini-chip mini-blue">
-            <span>Наступний</span>
-            <strong id="nextPaymentInfo">—</strong>
-          </div>
-          <div class="mini-chip mini-green">
-            <span>Закрито</span>
-            <strong id="paidMonthsInfo">—</strong>
-          </div>
-          <div class="mini-chip mini-orange">
-            <span>Прогрес</span>
-            <strong id="progressInfo">—</strong>
-          </div>
-        </div>
-
-        <div class="progress-wrap">
-          <div class="progress-top">
-            <span>Погашення тіла</span>
-            <span id="progressPercent">0%</span>
-          </div>
-          <div class="progress-bar">
-            <div id="progressFill" class="progress-fill"></div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="panel glass">
-      <div class="panel-head">
-        <div>
-          <h2>Графік платежів</h2>
-          <p class="panel-sub">Фактичні платежі, дата оплати, статус і залишок після платежу</p>
-        </div>
-      </div>
-
-      <div class="table-wrap modern-table">
+      <div class="table-wrap">
         <table>
           <thead>
             <tr>
@@ -141,13 +97,13 @@
               <th>Дата оплати</th>
               <th>Планова дата</th>
               <th>Тіло</th>
-              <th>%</th>
+              <th>Відсотки</th>
               <th>Сума</th>
               <th>Залишок після</th>
               <th>Нотатка</th>
             </tr>
           </thead>
-          <tbody id="tbody"></tbody>
+          <tbody id="paymentsTable"></tbody>
         </table>
       </div>
     </section>
