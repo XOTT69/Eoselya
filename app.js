@@ -1,7 +1,7 @@
-const STORAGE_PAID = "eoselia_paid_multi";
-const STORAGE_DATES = "eoselia_dates_multi";
-const STORAGE_NOTES = "eoselia_notes_multi";
-const STORAGE_THEME = "eoselia_theme_multi";
+const STORAGE_PAID = "eoselia_paid_modern";
+const STORAGE_DATES = "eoselia_dates_modern";
+const STORAGE_NOTES = "eoselia_notes_modern";
+const STORAGE_THEME = "eoselia_theme_modern";
 
 let paidMap = JSON.parse(localStorage.getItem(STORAGE_PAID) || "{}");
 let paymentDates = JSON.parse(localStorage.getItem(STORAGE_DATES) || "{}");
@@ -34,20 +34,16 @@ function buildRows() {
   let remaining = INITIAL_AMOUNT;
   return PAYMENTS.map((p, i) => {
     remaining = +(remaining - p.principal).toFixed(2);
-    return {
-      ...p,
-      id: i,
-      remainingAfter: Math.max(remaining, 0)
-    };
+    return { ...p, id: i, remainingAfter: Math.max(remaining, 0) };
   });
 }
 
 function getStatus(row) {
   if (paidMap[row.id]) return "paid";
   const now = new Date();
-  const a = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-  const b = new Date(parseDate(row.date).getFullYear(), parseDate(row.date).getMonth(), parseDate(row.date).getDate()).getTime();
-  const diff = Math.floor((b - a) / 86400000);
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  const pay = new Date(parseDate(row.date).getFullYear(), parseDate(row.date).getMonth(), parseDate(row.date).getDate()).getTime();
+  const diff = Math.floor((pay - today) / 86400000);
 
   if (diff < 0) return "overdue";
   if (diff === 0) return "today";
@@ -79,19 +75,6 @@ function getRowClass(status) {
   return "";
 }
 
-function renderSummary(rows) {
-  const paidRows = rows.filter(r => paidMap[r.id]);
-  const paidTotal = paidRows.reduce((s, r) => s + r.total, 0);
-  const paidInterest = paidRows.reduce((s, r) => s + r.interest, 0);
-  const paidPrincipal = paidRows.reduce((s, r) => s + r.principal, 0);
-  const remainingPrincipal = Math.max(0, INITIAL_AMOUNT - paidPrincipal);
-
-  document.getElementById("initialAmount").textContent = formatMoney(INITIAL_AMOUNT);
-  document.getElementById("remainingPrincipal").textContent = formatMoney(remainingPrincipal);
-  document.getElementById("paidTotal").textContent = formatMoney(paidTotal);
-  document.getElementById("paidInterest").textContent = formatMoney(paidInterest);
-}
-
 function getFilteredRows(rows) {
   const search = document.getElementById("searchInput").value.trim().toLowerCase();
   const unpaidOnly = document.getElementById("unpaidOnly").checked;
@@ -119,6 +102,27 @@ function getFilteredRows(rows) {
   return filtered;
 }
 
+function renderSummary(rows) {
+  const paidRows = rows.filter(r => paidMap[r.id]);
+  const paidTotal = paidRows.reduce((s, r) => s + r.total, 0);
+  const paidInterest = paidRows.reduce((s, r) => s + r.interest, 0);
+  const paidPrincipal = paidRows.reduce((s, r) => s + r.principal, 0);
+  const remainingPrincipal = Math.max(0, INITIAL_AMOUNT - paidPrincipal);
+  const nextUnpaid = rows.find(r => !paidMap[r.id]);
+  const progress = ((INITIAL_AMOUNT - remainingPrincipal) / INITIAL_AMOUNT) * 100;
+
+  document.getElementById("initialAmount").textContent = formatMoney(INITIAL_AMOUNT);
+  document.getElementById("remainingPrincipal").textContent = formatMoney(remainingPrincipal);
+  document.getElementById("paidTotal").textContent = formatMoney(paidTotal);
+  document.getElementById("paidInterest").textContent = formatMoney(paidInterest);
+  document.getElementById("statusSummary").textContent = nextUnpaid ? getStatusLabel(getStatus(nextUnpaid)) : "Закрито";
+  document.getElementById("nextPaymentInfo").textContent = nextUnpaid ? `${nextUnpaid.date} • ${formatMoney(nextUnpaid.total)}` : "Немає";
+  document.getElementById("paidMonthsInfo").textContent = `${paidRows.length} / ${rows.length}`;
+  document.getElementById("progressInfo").textContent = `${progress.toFixed(2)}%`;
+  document.getElementById("progressPercent").textContent = `${progress.toFixed(2)}%`;
+  document.getElementById("progressFill").style.width = `${Math.min(progress, 100)}%`;
+}
+
 function renderTable(rows) {
   const tbody = document.getElementById("tbody");
   tbody.innerHTML = "";
@@ -132,23 +136,15 @@ function renderTable(rows) {
     if (cls) tr.classList.add(cls);
 
     tr.innerHTML = `
-      <td>
-        <input type="checkbox" data-id="${row.id}" ${paidMap[row.id] ? "checked" : ""}>
-      </td>
-      <td>
-        <span class="status-badge ${getStatusBadge(status)}">${getStatusLabel(status)}</span>
-      </td>
-      <td>
-        <input type="date" data-date-id="${row.id}" value="${paymentDates[row.id] || ""}">
-      </td>
+      <td><input type="checkbox" data-id="${row.id}" ${paidMap[row.id] ? "checked" : ""}></td>
+      <td><span class="status-badge ${getStatusBadge(status)}">${getStatusLabel(status)}</span></td>
+      <td><input type="date" data-date-id="${row.id}" value="${paymentDates[row.id] || ""}"></td>
       <td>${row.date}</td>
       <td>${formatMoney(row.principal)}</td>
       <td>${formatMoney(row.interest)}</td>
       <td>${formatMoney(row.total)}</td>
       <td>${formatMoney(row.remainingAfter)}</td>
-      <td>
-        <input class="note-input" type="text" data-note-id="${row.id}" value="${notesMap[row.id] || ""}" placeholder="Нотатка">
-      </td>
+      <td><input class="note-input" type="text" data-note-id="${row.id}" value="${notesMap[row.id] || ""}" placeholder="Нотатка"></td>
     `;
     tbody.appendChild(tr);
   });
@@ -248,20 +244,19 @@ function exportCSV(rows) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = "eoselia-tracker.csv";
+  a.download = "eoselia-dashboard.csv";
   a.click();
   URL.revokeObjectURL(url);
 }
 
 function applyTheme(theme) {
-  document.documentElement.classList.toggle("dark", theme === "dark");
+  document.documentElement.classList.toggle("light", theme === "light");
   localStorage.setItem(STORAGE_THEME, theme);
-  document.getElementById("themeBtn").textContent = theme === "dark" ? "Світла тема" : "Темна тема";
 }
 
 function toggleTheme() {
-  const isDark = document.documentElement.classList.contains("dark");
-  applyTheme(isDark ? "light" : "dark");
+  const current = localStorage.getItem(STORAGE_THEME) || "dark";
+  applyTheme(current === "dark" ? "light" : "dark");
 }
 
 function render() {
@@ -279,5 +274,5 @@ document.getElementById("unpaidOnly").addEventListener("change", render);
 document.getElementById("sortField").addEventListener("change", render);
 document.getElementById("sortDirection").addEventListener("change", render);
 
-applyTheme(localStorage.getItem(STORAGE_THEME) || "light");
+applyTheme(localStorage.getItem(STORAGE_THEME) || "dark");
 render();
