@@ -7,7 +7,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="єОселя" />
-  <title>єОселя — Трекер іпотеки v4</title>
+  <title>єОселя — трекер іпотеки v4.1</title>
 
   <style>
     :root {
@@ -74,7 +74,7 @@
     }
 
     .app {
-      max-width: 1540px;
+      max-width: 1600px;
       margin: 0 auto;
       padding: 12px;
     }
@@ -93,9 +93,7 @@
       padding-bottom: 8px;
     }
 
-    h1, h2, h3 {
-      margin: 0;
-    }
+    h1, h2, h3 { margin: 0; }
 
     .brand h1 {
       font-size: 27px;
@@ -150,7 +148,7 @@
 
     .grid-2 {
       display: grid;
-      grid-template-columns: 1.2fr 0.8fr;
+      grid-template-columns: 1.15fr 0.85fr;
       gap: 14px;
       margin-bottom: 14px;
     }
@@ -162,7 +160,8 @@
       margin-bottom: 14px;
     }
 
-    .section-title-row {
+    .section-title-row,
+    .progress-head {
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -170,13 +169,7 @@
       flex-wrap: wrap;
     }
 
-    .progress-head {
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      margin-bottom: 10px;
-      flex-wrap: wrap;
-    }
+    .progress-head { margin-bottom: 10px; }
 
     .progress-bar {
       width: 100%;
@@ -238,7 +231,8 @@
     }
 
     .mini-input { max-width: 190px; }
-    .note-input { min-width: 170px; font-size: 13px; padding: 9px 10px; }
+    .note-input { min-width: 160px; font-size: 13px; padding: 9px 10px; }
+    .paydate-input { min-width: 150px; font-size: 13px; padding: 9px 10px; }
 
     .pill {
       display: inline-flex;
@@ -401,7 +395,7 @@
     table {
       width: 100%;
       border-collapse: collapse;
-      min-width: 1300px;
+      min-width: 1500px;
       background: var(--card);
     }
 
@@ -428,7 +422,8 @@
     }
 
     th:first-child, td:first-child,
-    th:nth-child(2), td:nth-child(2) {
+    th:nth-child(2), td:nth-child(2),
+    th:nth-child(3), td:nth-child(3) {
       text-align: center;
     }
 
@@ -462,17 +457,9 @@
 
     @media (max-width: 760px) {
       .app { padding: 10px; }
-      .topbar {
-        position: static;
-        background: transparent;
-      }
-      .topbar, .section-title-row, .progress-head {
-        flex-direction: column;
-        align-items: stretch;
-      }
-      .topbar-actions > *, .topbar-actions label, .row > * {
-        width: 100%;
-      }
+      .topbar { position: static; background: transparent; }
+      .topbar, .section-title-row, .progress-head { flex-direction: column; align-items: stretch; }
+      .topbar-actions > *, .topbar-actions label, .row > * { width: 100%; }
       .summary-grid { grid-template-columns: 1fr; }
       .brand h1 { font-size: 23px; }
       .card-value { font-size: 22px; }
@@ -486,8 +473,8 @@
   <div class="app">
     <header class="topbar">
       <div class="brand">
-        <h1>єОселя — трекер іпотеки v4</h1>
-        <p class="subtitle">PWA • темна тема • дострокове • календар • CSV • перерахунок графіка</p>
+        <h1>єОселя — трекер іпотеки v4.1</h1>
+        <p class="subtitle">Твої суми • дата оплати • PWA • темна тема • CSV • календар • дострокове</p>
       </div>
 
       <div class="topbar-actions">
@@ -558,7 +545,7 @@
               <span><i class="legend-box principal"></i> Тіло</span>
               <span><i class="legend-box interest"></i> Відсотки</span>
               <span><i class="legend-box done"></i> Сплачено</span>
-              <span><i class="legend-box current"></i> Поточний</span>
+              <span><i class="legend-box.current legend-box"></i> Поточний</span>
             </div>
           </div>
           <div id="scheduleChart" class="schedule-chart"></div>
@@ -576,7 +563,7 @@
             <button id="addPrepayBtn" class="btn btn-green">Додати</button>
           </div>
           <div class="footer-note">
-            У цій версії після дострокового перераховується прогнозний залишок тіла і наступні відсотки на основі фактичного місячного коефіцієнта з твого графіка, тому це значно ближче до реального перерахунку, ніж проста “економія по формулі”. [cite:2]
+            Після дострокового версія робить прогнозний перерахунок наступних відсотків на базі фактичного графіка, а не просто віднімає суму “на око”. Це прив’язано до твоєї іпотеки 1 000 000 грн під 7% на 20 років із фіксованим тілом 4 167 грн. [cite:2]
           </div>
         </section>
 
@@ -584,18 +571,10 @@
           <div class="section-title-row">
             <h2>Економія на %</h2>
           </div>
-          <div class="row" style="margin-top:12px;">
-            <div class="pill">Базові %: <strong id="baseInterestTotal">—</strong></div>
-          </div>
-          <div class="row" style="margin-top:10px;">
-            <div class="pill">Прогнозні %: <strong id="forecastInterestTotal">—</strong></div>
-          </div>
-          <div class="row" style="margin-top:10px;">
-            <div class="pill">Зекономлено: <strong id="savedInterest" class="saving-good">—</strong></div>
-          </div>
-          <div class="row" style="margin-top:10px;">
-            <div class="pill">Достроково внесено: <strong id="prepaidTotal">—</strong></div>
-          </div>
+          <div class="row" style="margin-top:12px;"><div class="pill">Базові %: <strong id="baseInterestTotal">—</strong></div></div>
+          <div class="row" style="margin-top:10px;"><div class="pill">Прогнозні %: <strong id="forecastInterestTotal">—</strong></div></div>
+          <div class="row" style="margin-top:10px;"><div class="pill">Зекономлено: <strong id="savedInterest" class="saving-good">—</strong></div></div>
+          <div class="row" style="margin-top:10px;"><div class="pill">Достроково внесено: <strong id="prepaidTotal">—</strong></div></div>
         </section>
 
         <section class="extra-card">
@@ -631,7 +610,7 @@
           <span class="status-badge badge-paid">Сплачено</span>
         </div>
         <div class="footer-note">
-          “Скоро” означає, що дата платежу настане протягом найближчих 7 днів. “Прострочено” — дата вже минула і платіж не позначено як сплачений. [cite:2]
+          Якщо платіж має позначку “сплачено”, то статус стає “Сплачено”. Якщо не сплачено і планова дата вже минула — це “Прострочено”; якщо дата сьогодні — “Сьогодні”; якщо протягом 7 днів — “Скоро”. [cite:3]
         </div>
       </section>
 
@@ -644,8 +623,8 @@
           <label class="pill"><input type="checkbox" id="unpaidOnly" /> Тільки несплачені</label>
           <select id="sortField">
             <option value="date">Дата</option>
-            <option value="total">Сума</option>
-            <option value="interest">Відсотки</option>
+            <option value="projectedTotal">Нова сума</option>
+            <option value="projectedInterest">Перерах. %</option>
             <option value="principal">Тіло</option>
             <option value="remainingAfterProjected">Залишок</option>
           </select>
@@ -668,7 +647,8 @@
             <tr>
               <th>Сплачено</th>
               <th>Статус</th>
-              <th>Дата</th>
+              <th>Дата оплати</th>
+              <th>Планова дата</th>
               <th>Тіло</th>
               <th>Базові %</th>
               <th>Перерах. %</th>
@@ -684,16 +664,17 @@
       </div>
 
       <div class="footer-note">
-        Таблиця базується на фактичному графіку користувача по єОселі та додає прогнозний перерахунок після дострокового погашення, виходячи з тієї ж логіки зменшення залишку боргу і щомісячних відсотків від поточного залишку. [cite:2][cite:5]
+        У таблиці використовується твій фактичний графік платежів, а також окремо зберігається фактична дата оплати по кожному місяцю, щоб можна було нормально вести облік “коли реально заплатив”. [cite:2][cite:3]
       </div>
     </section>
   </div>
 
   <script>
-    const STORAGE_KEY = "eoselia_paid_months_v4";
-    const NOTES_KEY = "eoselia_payment_notes_v4";
-    const PREPAY_KEY = "eoselia_prepayments_v4";
-    const THEME_KEY = "eoselia_theme_v4";
+    const STORAGE_KEY = "eoselia_paid_months_v41";
+    const NOTES_KEY = "eoselia_payment_notes_v41";
+    const PREPAY_KEY = "eoselia_prepayments_v41";
+    const THEME_KEY = "eoselia_theme_v41";
+    const PAYDATE_KEY = "eoselia_payment_dates_v41";
     const INITIAL_AMOUNT = 1000000;
 
     const payments = [
@@ -939,21 +920,29 @@
       { date: "15/09/2044", principal: 4087.00, interest: 54.30, total: 4141.30 }
     ];
 
-    function formatMoney(value) {
-      return new Intl.NumberFormat("uk-UA", {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-      }).format(Number(value || 0)) + " грн";
-    }
-
     function parseDate(dateStr) {
       const [day, month, year] = dateStr.split("/").map(Number);
       return new Date(year, month - 1, day);
     }
 
-    function inputDateToDisplay(value) {
-      const [year, month, day] = value.split("-");
-      return `${day}/${month}/${year}`;
+    function toInputDate(displayDate) {
+      if (!displayDate) return "";
+      const [d, m, y] = displayDate.split("/");
+      return `${y}-${m}-${d}`;
+    }
+
+    function fromInputDate(inputDate) {
+      if (!inputDate) return "";
+      const [y, m, d] = inputDate.split("-");
+      return `${d}/${m}/${y}`;
+    }
+
+    function todayInput() {
+      const now = new Date();
+      const y = now.getFullYear();
+      const m = String(now.getMonth() + 1).padStart(2, "0");
+      const d = String(now.getDate()).padStart(2, "0");
+      return `${y}-${m}-${d}`;
     }
 
     function loadJSON(key, fallback) {
@@ -998,6 +987,7 @@
     let paidMap = loadJSON(STORAGE_KEY, {});
     let notesMap = loadJSON(NOTES_KEY, {});
     let prepayments = loadJSON(PREPAY_KEY, []);
+    let paymentDates = loadJSON(PAYDATE_KEY, []);
     let deferredPrompt = null;
 
     function getPrepayForDate(dateStr) {
@@ -1010,24 +1000,33 @@
       return prepayments.reduce((sum, p) => sum + Number(p.amount), 0);
     }
 
+    function getPaymentDate(id) {
+      return paymentDates[id] || "";
+    }
+
+    function setPaymentDate(id, val) {
+      paymentDates[id] = val;
+      saveJSON(PAYDATE_KEY, paymentDates);
+    }
+
     function calculateProjectedSchedule() {
       let balance = INITIAL_AMOUNT;
       return fullData.map((item) => {
         const prepay = getPrepayForDate(item.date);
         const projectedInterest = Math.max(0, +(balance * item.monthlyRate).toFixed(2));
         const projectedPrincipal = Math.min(item.principal, balance);
-        const newTotal = +(projectedPrincipal + projectedInterest).toFixed(2);
-        const balanceAfter = Math.max(0, +(balance - projectedPrincipal - prepay).toFixed(2));
+        const projectedTotal = +(projectedPrincipal + projectedInterest).toFixed(2);
+        const remainingAfterProjected = Math.max(0, +(balance - projectedPrincipal - prepay).toFixed(2));
 
         const row = {
           ...item,
           prepay,
           projectedInterest,
-          projectedTotal: newTotal,
-          remainingAfterProjected: balanceAfter
+          projectedTotal,
+          remainingAfterProjected
         };
 
-        balance = balanceAfter;
+        balance = remainingAfterProjected;
         return row;
       });
     }
@@ -1100,7 +1099,7 @@
       const lastPaid = [...paidItems].pop();
       const remainingPrincipal = lastPaid
         ? lastPaid.remainingAfterProjected
-        : INITIAL_AMOUNT - totalPrepaid();
+        : Math.max(0, INITIAL_AMOUNT - totalPrepaid());
 
       const remainingTotal = unpaidItems.reduce((sum, item) => sum + item.projectedTotal, 0);
       const progress = ((INITIAL_AMOUNT - Math.max(remainingPrincipal, 0)) / INITIAL_AMOUNT) * 100;
@@ -1180,8 +1179,8 @@
 
       data.forEach(item => {
         const status = paymentStatus(item);
-        const tr = document.createElement("tr");
         const rowClass = rowStatusClass(status);
+        const tr = document.createElement("tr");
         if (rowClass) tr.classList.add(rowClass);
         if (item.id === currentId) tr.classList.add("current-row");
 
@@ -1190,6 +1189,9 @@
             <input type="checkbox" class="pay-checkbox" data-id="${item.id}" ${paidMap[item.id] ? "checked" : ""} />
           </td>
           <td><span class="status-badge ${statusBadgeClass(status)}">${statusLabel(status)}</span></td>
+          <td>
+            <input type="date" class="paydate-input" data-paydate-id="${item.id}" value="${getPaymentDate(item.id)}" />
+          </td>
           <td>${item.date}</td>
           <td>${formatMoney(item.principal)}</td>
           <td>${formatMoney(item.interest)}</td>
@@ -1199,13 +1201,7 @@
           <td>${formatMoney(item.remainingAfterProjected)}</td>
           <td>${item.prepay ? formatMoney(item.prepay) : "—"}</td>
           <td>
-            <input
-              class="note-input"
-              type="text"
-              placeholder="Нотатка..."
-              data-note-id="${item.id}"
-              value="${(notesMap[item.id] || "").replace(/"/g, "&quot;")}"
-            />
+            <input class="note-input" type="text" placeholder="Нотатка..." data-note-id="${item.id}" value="${(notesMap[item.id] || "").replace(/"/g, "&quot;")}" />
           </td>
         `;
         tbody.appendChild(tr);
@@ -1214,9 +1210,26 @@
       document.querySelectorAll(".pay-checkbox").forEach(checkbox => {
         checkbox.addEventListener("change", e => {
           const id = Number(e.target.dataset.id);
-          if (e.target.checked) paidMap[id] = true;
-          else delete paidMap[id];
+          if (e.target.checked) {
+            paidMap[id] = true;
+            if (!getPaymentDate(id)) setPaymentDate(id, todayInput());
+          } else {
+            delete paidMap[id];
+          }
           saveJSON(STORAGE_KEY, paidMap);
+          renderAll();
+        });
+      });
+
+      document.querySelectorAll(".paydate-input").forEach(input => {
+        input.addEventListener("change", e => {
+          const id = Number(e.target.dataset.paydateId);
+          const value = e.target.value;
+          setPaymentDate(id, value);
+          if (value && !paidMap[id]) {
+            paidMap[id] = true;
+            saveJSON(STORAGE_KEY, paidMap);
+          }
           renderAll();
         });
       });
@@ -1255,11 +1268,13 @@
 
         const note = notesMap[item.id] ? `\nНотатка: ${notesMap[item.id]}` : "";
         const prepayText = item.prepay ? `\nДострокове: ${formatMoney(item.prepay)}` : "";
+        const paidDateText = getPaymentDate(item.id) ? `\nДата оплати: ${fromInputDate(getPaymentDate(item.id))}` : "";
+
         group.title = `${item.date}
 Тіло: ${formatMoney(item.principal)}
 Перерах. %: ${formatMoney(item.projectedInterest)}
 Нова сума: ${formatMoney(item.projectedTotal)}
-Залишок після: ${formatMoney(item.remainingAfterProjected)}${prepayText}${note}`;
+Залишок після: ${formatMoney(item.remainingAfterProjected)}${prepayText}${paidDateText}${note}`;
 
         container.appendChild(group);
       });
@@ -1293,12 +1308,7 @@
       yearSelect.innerHTML = years.map(y => `<option value="${y}">${y}</option>`).join("");
 
       monthSelect.value = now.getMonth();
-      yearSelect.value = now.getFullYear();
-
-      if (!years.includes(now.getFullYear())) {
-        monthSelect.value = parseDate(fullData[0].date).getMonth();
-        yearSelect.value = parseDate(fullData[0].date).getFullYear();
-      }
+      yearSelect.value = years.includes(now.getFullYear()) ? now.getFullYear() : years[0];
     }
 
     function renderCalendar(schedule) {
@@ -1314,9 +1324,7 @@
       const map = new Map();
       schedule.forEach(item => {
         const d = parseDate(item.date);
-        if (d.getMonth() === month && d.getFullYear() === year) {
-          map.set(d.getDate(), item);
-        }
+        if (d.getMonth() === month && d.getFullYear() === year) map.set(d.getDate(), item);
       });
 
       grid.innerHTML = weekdays.map(w => `<div class="weekday">${w}</div>`).join("");
@@ -1328,12 +1336,7 @@
       for (let day = 1; day <= daysInMonth; day++) {
         const item = map.get(day);
         if (!item) {
-          grid.innerHTML += `
-            <div class="calendar-day status-planned">
-              <div class="day-num">${day}</div>
-              <div class="day-text">—</div>
-            </div>
-          `;
+          grid.innerHTML += `<div class="calendar-day status-planned"><div class="day-num">${day}</div><div class="day-text">—</div></div>`;
           continue;
         }
 
@@ -1344,11 +1347,13 @@
           status === "soon" ? "status-soon" :
           status === "paid" ? "status-paid" : "status-planned";
 
+        const factDate = getPaymentDate(item.id) ? `\nОплачено: ${fromInputDate(getPaymentDate(item.id))}` : "";
+
         grid.innerHTML += `
           <div class="calendar-day ${statusClass}" title="${item.date} • ${formatMoney(item.projectedTotal)}">
             <div class="day-num">${day}</div>
             <div class="day-text">${statusLabel(status)}
-${formatMoney(item.projectedTotal)}</div>
+${formatMoney(item.projectedTotal)}${factDate}</div>
           </div>
         `;
       }
@@ -1365,7 +1370,7 @@ ${formatMoney(item.projectedTotal)}</div>
 
       prepayments.push({
         rawDate,
-        date: inputDateToDisplay(rawDate),
+        date: fromInputDate(rawDate),
         amount: Number(amount.toFixed(2))
       });
 
@@ -1379,13 +1384,15 @@ ${formatMoney(item.projectedTotal)}</div>
       saveJSON(PREPAY_KEY, prepayments);
       renderAll();
     }
-
     window.removePrepay = removePrepay;
 
     function markTillToday() {
       const now = new Date();
       fullData.forEach(item => {
-        if (parseDate(item.date) <= now) paidMap[item.id] = true;
+        if (parseDate(item.date) <= now) {
+          paidMap[item.id] = true;
+          if (!getPaymentDate(item.id)) setPaymentDate(item.id, todayInput());
+        }
       });
       saveJSON(STORAGE_KEY, paidMap);
       renderAll();
@@ -1396,8 +1403,222 @@ ${formatMoney(item.projectedTotal)}</div>
         paidMap,
         notesMap,
         prepayments,
+        paymentDates,
         theme: loadTheme(),
         exportedAt: new Date().toISOString()
       };
 
-      const
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "eoselia-tracker-v41-backup.json";
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function exportCSV(schedule) {
+      const rows = [
+        [
+          "Сплачено",
+          "Статус",
+          "Дата оплати",
+          "Планова дата",
+          "Тіло",
+          "Базові %",
+          "Перераховані %",
+          "Базова сума",
+          "Нова сума",
+          "Залишок після",
+          "Дострокове",
+          "Нотатка"
+        ]
+      ];
+
+      schedule.forEach(item => {
+        rows.push([
+          paidMap[item.id] ? "Так" : "Ні",
+          statusLabel(paymentStatus(item)),
+          getPaymentDate(item.id) ? fromInputDate(getPaymentDate(item.id)) : "",
+          item.date,
+          item.principal.toFixed(2),
+          item.interest.toFixed(2),
+          item.projectedInterest.toFixed(2),
+          item.total.toFixed(2),
+          item.projectedTotal.toFixed(2),
+          item.remainingAfterProjected.toFixed(2),
+          item.prepay ? item.prepay.toFixed(2) : "",
+          notesMap[item.id] || ""
+        ]);
+      });
+
+      const csv = rows.map(row =>
+        row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(";")
+      ).join("\n");
+
+      const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "eoselia-tracker-v41.csv";
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function importState(file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const data = JSON.parse(reader.result);
+          paidMap = data.paidMap || {};
+          notesMap = data.notesMap || {};
+          prepayments = data.prepayments || [];
+          paymentDates = data.paymentDates || [];
+          saveJSON(STORAGE_KEY, paidMap);
+          saveJSON(NOTES_KEY, notesMap);
+          saveJSON(PREPAY_KEY, prepayments);
+          saveJSON(PAYDATE_KEY, paymentDates);
+          if (data.theme) applyTheme(data.theme);
+          renderAll();
+          alert("Імпорт успішний");
+        } catch {
+          alert("Помилка імпорту JSON");
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function registerPWA() {
+      const manifest = {
+        name: "єОселя — Трекер іпотеки",
+        short_name: "єОселя",
+        start_url: ".",
+        display: "standalone",
+        background_color: loadTheme() === "dark" ? "#0f1115" : "#f5f6f8",
+        theme_color: loadTheme() === "dark" ? "#0f1115" : "#f5f6f8",
+        icons: [{
+          src: "data:image/svg+xml;base64," + btoa(`
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+              <rect width="256" height="256" rx="48" fill="#f2b21b"/>
+              <text x="50%" y="56%" dominant-baseline="middle" text-anchor="middle"
+                font-family="Arial" font-size="112" font-weight="700" fill="#1f2328">₴</text>
+            </svg>
+          `),
+          sizes: "256x256",
+          type: "image/svg+xml",
+          purpose: "any maskable"
+        }]
+      };
+
+      const manifestBlob = new Blob([JSON.stringify(manifest)], { type: "application/json" });
+      const manifestURL = URL.createObjectURL(manifestBlob);
+      const link = document.createElement("link");
+      link.rel = "manifest";
+      link.href = manifestURL;
+      document.head.appendChild(link);
+
+      if ("serviceWorker" in navigator) {
+        const swCode = `
+          const CACHE_NAME = 'eoselia-v41-cache';
+          self.addEventListener('install', event => {
+            event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(['./'])));
+            self.skipWaiting();
+          });
+          self.addEventListener('activate', event => {
+            event.waitUntil(self.clients.claim());
+          });
+          self.addEventListener('fetch', event => {
+            if (event.request.method !== 'GET') return;
+            event.respondWith(
+              caches.match(event.request).then(response => response || fetch(event.request).then(fetchResponse => {
+                const cloned = fetchResponse.clone();
+                caches.open(CACHE_NAME).then(cache => cache.put(event.request, cloned));
+                return fetchResponse;
+              }).catch(() => caches.match('./')))
+            );
+          });
+        `;
+        const swBlob = new Blob([swCode], { type: "text/javascript" });
+        const swUrl = URL.createObjectURL(swBlob);
+        navigator.serviceWorker.register(swUrl);
+      }
+    }
+
+    function setupInstallPrompt() {
+      const installBtn = document.getElementById("installBtn");
+
+      window.addEventListener("beforeinstallprompt", (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        installBtn.style.display = "inline-flex";
+      });
+
+      installBtn.addEventListener("click", async () => {
+        if (!deferredPrompt) return;
+        deferredPrompt.prompt();
+        await deferredPrompt.userChoice;
+        deferredPrompt = null;
+        installBtn.style.display = "none";
+      });
+    }
+
+    function renderAll() {
+      const schedule = calculateProjectedSchedule();
+      renderSummary(schedule);
+      renderTable(schedule);
+      renderChart(schedule);
+      renderPrepayList();
+      renderCalendar(schedule);
+    }
+
+    document.getElementById("themeToggleBtn").addEventListener("click", () => {
+      const current = loadTheme();
+      applyTheme(current === "dark" ? "light" : "dark");
+    });
+
+    document.getElementById("markTillTodayBtn").addEventListener("click", () => {
+      if (confirm("Позначити всі платежі до сьогодні як сплачені?")) markTillToday();
+    });
+
+    document.getElementById("addPrepayBtn").addEventListener("click", addPrepayment);
+
+    document.getElementById("exportBtn").addEventListener("click", exportState);
+    document.getElementById("exportCsvBtn").addEventListener("click", () => {
+      exportCSV(calculateProjectedSchedule());
+    });
+
+    document.getElementById("importInput").addEventListener("change", e => {
+      const file = e.target.files[0];
+      if (file) importState(file);
+      e.target.value = "";
+    });
+
+    document.getElementById("resetPaidBtn").addEventListener("click", () => {
+      if (confirm("Скинути відмітки, дати оплат, нотатки і дострокові?")) {
+        paidMap = {};
+        notesMap = {};
+        prepayments = [];
+        paymentDates = [];
+        saveJSON(STORAGE_KEY, paidMap);
+        saveJSON(NOTES_KEY, notesMap);
+        saveJSON(PREPAY_KEY, prepayments);
+        saveJSON(PAYDATE_KEY, paymentDates);
+        renderAll();
+      }
+    });
+
+    document.getElementById("searchInput").addEventListener("input", renderAll);
+    document.getElementById("unpaidOnly").addEventListener("change", renderAll);
+    document.getElementById("sortField").addEventListener("change", renderAll);
+    document.getElementById("sortDirection").addEventListener("change", renderAll);
+    document.getElementById("calendarMonth").addEventListener("change", renderAll);
+    document.getElementById("calendarYear").addEventListener("change", renderAll);
+
+    applyTheme(loadTheme());
+    initCalendarSelectors();
+    registerPWA();
+    setupInstallPrompt();
+    renderAll();
+  </script>
+</body>
+</html>
