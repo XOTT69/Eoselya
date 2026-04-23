@@ -1,6 +1,6 @@
-const INITIAL_AMOUNT = 1000000;
+window.INITIAL_AMOUNT = 1000000;
 
-const PAYMENTS = [
+window.PAYMENTS = [
   { date: "25/10/2024", principal: 4167.00, interest: 2868.85, total: 7035.85 },
   { date: "25/11/2024", principal: 4167.00, interest: 5923.38, total: 10090.38 },
   { date: "25/12/2024", principal: 4167.00, interest: 5709.02, total: 9876.02 },
@@ -28,6 +28,7 @@ const PAYMENTS = [
   { date: "25/10/2026", principal: 4167.00, interest: 5197.22, total: 9364.22 },
   { date: "25/11/2026", principal: 4167.00, interest: 5345.04, total: 9512.04 },
   { date: "25/12/2026", principal: 4167.00, interest: 5149.27, total: 9316.27 },
+
   { date: "25/01/2027", principal: 4167.00, interest: 5295.50, total: 9462.50 },
   { date: "25/02/2027", principal: 4167.00, interest: 5270.72, total: 9437.72 },
   { date: "25/03/2027", principal: 4167.00, interest: 4740.13, total: 8907.13 },
@@ -40,6 +41,7 @@ const PAYMENTS = [
   { date: "25/10/2027", principal: 4167.00, interest: 4909.52, total: 9076.52 },
   { date: "25/11/2027", principal: 4167.00, interest: 5047.76, total: 9214.76 },
   { date: "25/12/2027", principal: 4167.00, interest: 4861.57, total: 9028.57 },
+
   { date: "25/01/2028", principal: 4167.00, interest: 4998.21, total: 9165.21 },
   { date: "25/02/2028", principal: 4167.00, interest: 4959.85, total: 9126.85 },
   { date: "25/03/2028", principal: 4167.00, interest: 4617.99, total: 8784.99 },
@@ -52,6 +54,7 @@ const PAYMENTS = [
   { date: "25/10/2028", principal: 4167.00, interest: 4609.19, total: 8776.19 },
   { date: "25/11/2028", principal: 4167.00, interest: 4737.50, total: 8904.50 },
   { date: "25/12/2028", principal: 4167.00, interest: 4561.38, total: 8728.38 },
+
   { date: "25/01/2029", principal: 4167.00, interest: 4688.08, total: 8855.08 },
   { date: "25/02/2029", principal: 4167.00, interest: 4676.15, total: 8843.15 },
   { date: "25/03/2029", principal: 4167.00, interest: 4203.10, total: 8370.10 },
@@ -64,6 +67,7 @@ const PAYMENTS = [
   { date: "25/10/2029", principal: 4167.00, interest: 4334.13, total: 8501.13 },
   { date: "25/11/2029", principal: 4167.00, interest: 4453.19, total: 8620.19 },
   { date: "25/12/2029", principal: 4167.00, interest: 4286.18, total: 8453.18 },
+
   { date: "25/01/2030", principal: 4167.00, interest: 4403.64, total: 8570.64 },
   { date: "25/02/2030", principal: 4167.00, interest: 4378.87, total: 8545.87 },
   { date: "25/03/2030", principal: 4167.00, interest: 3934.58, total: 8101.58 },
@@ -76,6 +80,7 @@ const PAYMENTS = [
   { date: "25/10/2030", principal: 4167.00, interest: 4046.44, total: 8213.44 },
   { date: "25/11/2030", principal: 4167.00, interest: 4155.91, total: 8322.91 },
   { date: "25/12/2030", principal: 4167.00, interest: 3998.49, total: 8165.49 },
+
   { date: "25/01/2031", principal: 4167.00, interest: 4106.36, total: 8273.36 },
   { date: "25/02/2031", principal: 4167.00, interest: 4081.59, total: 8248.59 },
   { date: "25/03/2031", principal: 4167.00, interest: 3666.07, total: 7833.07 },
@@ -88,6 +93,7 @@ const PAYMENTS = [
   { date: "25/10/2031", principal: 4167.00, interest: 3750.74, total: 7925.74 },
   { date: "25/11/2031", principal: 4167.00, interest: 3858.62, total: 8025.62 },
   { date: "25/12/2031", principal: 4167.00, interest: 3710.79, total: 7877.79 },
+
   { date: "25/01/2032", principal: 4167.00, interest: 3809.07, total: 7976.07 },
   { date: "25/02/2032", principal: 4167.00, interest: 3773.97, total: 7940.97 },
   { date: "25/03/2032", principal: 4167.00, interest: 3508.60, total: 7675.60 },
@@ -100,6 +106,7 @@ const PAYMENTS = [
   { date: "25/10/2032", principal: 4167.00, interest: 3461.57, total: 7628.57 },
   { date: "25/11/2032", principal: 4167.00, interest: 3551.61, total: 7718.61 },
   { date: "25/12/2032", principal: 4167.00, interest: 3413.74, total: 7580.74 },
+
   { date: "25/01/2033", principal: 4167.00, interest: 3502.20, total: 7669.20 },
   { date: "25/02/2033", principal: 4167.00, interest: 3487.02, total: 7654.02 },
   { date: "25/03/2033", principal: 4167.00, interest: 3129.05, total: 7296.05 },
@@ -112,6 +119,7 @@ const PAYMENTS = [
   { date: "25/10/2033", principal: 4167.00, interest: 3183.36, total: 7350.36 },
   { date: "25/11/2033", principal: 4167.00, interest: 3264.05, total: 7431.05 },
   { date: "25/12/2033", principal: 4167.00, interest: 3135.41, total: 7302.41 },
+
   { date: "25/01/2034", principal: 4167.00, interest: 3214.51, total: 7381.51 },
   { date: "25/02/2034", principal: 4167.00, interest: 3189.73, total: 7356.73 },
   { date: "25/03/2034", principal: 4167.00, interest: 2860.53, total: 7027.53 },
@@ -124,6 +132,7 @@ const PAYMENTS = [
   { date: "25/10/2034", principal: 4167.00, interest: 2895.67, total: 7062.67 },
   { date: "25/11/2034", principal: 4167.00, interest: 2966.78, total: 7133.78 },
   { date: "25/12/2034", principal: 4167.00, interest: 2847.72, total: 7014.72 },
+
   { date: "25/01/2035", principal: 4167.00, interest: 2917.23, total: 7084.23 },
   { date: "25/02/2035", principal: 4167.00, interest: 2892.45, total: 7059.45 },
   { date: "25/03/2035", principal: 4167.00, interest: 2592.02, total: 6759.02 },
@@ -136,6 +145,7 @@ const PAYMENTS = [
   { date: "25/10/2035", principal: 4167.00, interest: 2607.97, total: 6774.97 },
   { date: "25/11/2035", principal: 4167.00, interest: 2669.49, total: 6836.49 },
   { date: "25/12/2035", principal: 4167.00, interest: 2560.02, total: 6727.02 },
+
   { date: "25/01/2036", principal: 4167.00, interest: 2619.94, total: 6786.94 },
   { date: "25/02/2036", principal: 4167.00, interest: 2588.08, total: 6755.08 },
   { date: "25/03/2036", principal: 4167.00, interest: 2399.22, total: 6566.22 },
@@ -148,6 +158,7 @@ const PAYMENTS = [
   { date: "25/10/2036", principal: 4167.00, interest: 2313.93, total: 6480.93 },
   { date: "25/11/2036", principal: 4167.00, interest: 2365.73, total: 6532.73 },
   { date: "25/12/2036", principal: 4167.00, interest: 2266.12, total: 6433.12 },
+
   { date: "25/01/2037", principal: 4167.00, interest: 2316.31, total: 6483.31 },
   { date: "25/02/2037", principal: 4167.00, interest: 2297.89, total: 6464.89 },
   { date: "25/03/2037", principal: 4167.00, interest: 2054.99, total: 6221.99 },
@@ -160,6 +171,7 @@ const PAYMENTS = [
   { date: "25/10/2037", principal: 4167.00, interest: 2032.58, total: 6199.58 },
   { date: "25/11/2037", principal: 4167.00, interest: 2074.92, total: 6241.92 },
   { date: "25/12/2037", principal: 4167.00, interest: 1984.63, total: 6151.63 },
+
   { date: "25/01/2038", principal: 4167.00, interest: 2025.37, total: 6192.37 },
   { date: "25/02/2038", principal: 4167.00, interest: 2000.60, total: 6167.60 },
   { date: "25/03/2038", principal: 4167.00, interest: 1786.47, total: 5953.47 },
@@ -172,6 +184,7 @@ const PAYMENTS = [
   { date: "25/10/2038", principal: 4167.00, interest: 1744.88, total: 5911.88 },
   { date: "25/11/2038", principal: 4167.00, interest: 1777.63, total: 5944.63 },
   { date: "25/12/2038", principal: 4167.00, interest: 1696.93, total: 5863.93 },
+
   { date: "25/01/2039", principal: 4167.00, interest: 1728.08, total: 5895.08 },
   { date: "25/02/2039", principal: 4167.00, interest: 1703.32, total: 5870.32 },
   { date: "25/03/2039", principal: 4167.00, interest: 1517.96, total: 5684.96 },
@@ -184,6 +197,7 @@ const PAYMENTS = [
   { date: "25/10/2039", principal: 4167.00, interest: 1457.19, total: 5624.19 },
   { date: "25/11/2039", principal: 4167.00, interest: 1480.35, total: 5647.35 },
   { date: "25/12/2039", principal: 4167.00, interest: 1409.24, total: 5576.24 },
+
   { date: "25/01/2040", principal: 4167.00, interest: 1430.80, total: 5597.80 },
   { date: "25/02/2040", principal: 4167.00, interest: 1402.18, total: 5569.18 },
   { date: "25/03/2040", principal: 4167.00, interest: 1289.85, total: 5456.85 },
@@ -196,6 +210,7 @@ const PAYMENTS = [
   { date: "25/10/2040", principal: 4167.00, interest: 1166.30, total: 5333.30 },
   { date: "25/11/2040", principal: 4167.00, interest: 1179.84, total: 5346.84 },
   { date: "25/12/2040", principal: 4167.00, interest: 1118.48, total: 5285.48 },
+
   { date: "25/01/2041", principal: 4167.00, interest: 1130.42, total: 5297.42 },
   { date: "25/02/2041", principal: 4167.00, interest: 1108.74, total: 5275.74 },
   { date: "25/03/2041", principal: 4167.00, interest: 980.92, total: 5147.92 },
@@ -208,6 +223,7 @@ const PAYMENTS = [
   { date: "25/10/2041", principal: 4167.00, interest: 881.80, total: 5048.80 },
   { date: "25/11/2041", principal: 4167.00, interest: 885.78, total: 5052.78 },
   { date: "25/12/2041", principal: 4167.00, interest: 833.85, total: 5000.85 },
+
   { date: "25/01/2042", principal: 4167.00, interest: 836.24, total: 5003.24 },
   { date: "25/02/2042", principal: 4167.00, interest: 811.46, total: 4978.46 },
   { date: "25/03/2042", principal: 4167.00, interest: 712.41, total: 4879.41 },
@@ -220,6 +236,7 @@ const PAYMENTS = [
   { date: "25/10/2042", principal: 4167.00, interest: 594.11, total: 4761.11 },
   { date: "25/11/2042", principal: 4167.00, interest: 588.50, total: 4755.50 },
   { date: "25/12/2042", principal: 4167.00, interest: 546.16, total: 4713.16 },
+
   { date: "25/01/2043", principal: 4167.00, interest: 538.95, total: 4705.95 },
   { date: "25/02/2043", principal: 4167.00, interest: 514.17, total: 4681.17 },
   { date: "25/03/2043", principal: 4167.00, interest: 443.89, total: 4610.89 },
@@ -232,6 +249,7 @@ const PAYMENTS = [
   { date: "25/10/2043", principal: 4167.00, interest: 306.42, total: 4473.42 },
   { date: "25/11/2043", principal: 4167.00, interest: 291.22, total: 4458.22 },
   { date: "25/12/2043", principal: 4167.00, interest: 258.47, total: 4425.47 },
+
   { date: "25/01/2044", principal: 4167.00, interest: 241.67, total: 4408.67 },
   { date: "25/02/2044", principal: 4167.00, interest: 216.30, total: 4383.30 },
   { date: "25/03/2044", principal: 4167.00, interest: 180.47, total: 4347.47 },
