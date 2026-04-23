@@ -12,13 +12,18 @@
     <header class="topbar">
       <div class="brand">
         <h1>єОселя — трекер іпотеки</h1>
-        <p class="subtitle">1 000 000 грн • 7% річних • 20 років • дата оплати • localStorage</p>
+        <p class="subtitle">Календар • дострокове • економія на % • JSON/CSV • дата оплати</p>
       </div>
 
       <div class="topbar-actions">
         <button id="themeToggleBtn" class="btn btn-secondary">🌙 Темна тема</button>
         <button id="markTillTodayBtn" class="btn btn-primary">Позначити до сьогодні</button>
         <button id="exportCsvBtn" class="btn btn-secondary">Експорт CSV</button>
+        <button id="exportJsonBtn" class="btn btn-secondary">Експорт JSON</button>
+        <label class="file-btn">
+          Імпорт JSON
+          <input type="file" id="importJsonInput" accept="application/json" hidden />
+        </label>
         <button id="resetPaidBtn" class="btn btn-danger">Скинути все</button>
       </div>
     </header>
@@ -68,6 +73,41 @@
       </div>
     </section>
 
+    <section class="grid-2">
+      <section class="table-card">
+        <div class="section-title-row">
+          <h2>Дострокове погашення</h2>
+        </div>
+
+        <div class="prepay-controls">
+          <input type="date" id="prepayDate" />
+          <input type="number" id="prepayAmount" min="0" step="0.01" placeholder="Сума, грн" />
+          <button id="addPrepayBtn" class="btn btn-green">Додати дострокове</button>
+        </div>
+
+        <div class="prepay-summary">
+          <div class="pill">Базові %: <strong id="baseInterestTotal">—</strong></div>
+          <div class="pill">Нові %: <strong id="forecastInterestTotal">—</strong></div>
+          <div class="pill">Економія: <strong id="savedInterest" class="saving-good">—</strong></div>
+          <div class="pill">Достроково внесено: <strong id="prepaidTotal">—</strong></div>
+        </div>
+
+        <div id="prepayList" class="prepay-list muted">Ще немає дострокових платежів.</div>
+      </section>
+
+      <section class="table-card">
+        <div class="section-title-row">
+          <h2>Календар платежів</h2>
+          <div class="sort-row">
+            <select id="calendarMonth"></select>
+            <select id="calendarYear"></select>
+          </div>
+        </div>
+
+        <div class="calendar-grid" id="calendarGrid"></div>
+      </section>
+    </section>
+
     <section class="table-card">
       <div class="section-title-row">
         <h2>Графік платежів</h2>
@@ -76,10 +116,10 @@
           <label class="pill"><input type="checkbox" id="unpaidOnly" /> Тільки несплачені</label>
           <select id="sortField">
             <option value="date">Дата</option>
-            <option value="total">Сума</option>
-            <option value="interest">Відсотки</option>
+            <option value="projectedTotal">Нова сума</option>
+            <option value="projectedInterest">Перерах. %</option>
             <option value="principal">Тіло</option>
-            <option value="remainingAfter">Залишок</option>
+            <option value="remainingAfterProjected">Залишок</option>
           </select>
           <select id="sortDirection">
             <option value="asc">По зростанню</option>
@@ -97,9 +137,12 @@
               <th>Дата оплати</th>
               <th>Планова дата</th>
               <th>Тіло</th>
-              <th>Відсотки</th>
-              <th>Сума</th>
+              <th>Базові %</th>
+              <th>Перерах. %</th>
+              <th>Базова сума</th>
+              <th>Нова сума</th>
               <th>Залишок після</th>
+              <th>Дострокове</th>
               <th>Нотатка</th>
             </tr>
           </thead>
@@ -110,6 +153,8 @@
   </div>
 
   <script src="data.js"></script>
+  <script src="prepayment.js"></script>
+  <script src="calendar.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
