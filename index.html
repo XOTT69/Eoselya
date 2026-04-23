@@ -1,27 +1,506 @@
 <!DOCTYPE html>
-<html lang="uk">
+<html lang="uk" data-theme="light">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>єОселя — Трекер іпотеки v2</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#f5f6f8" id="themeColorMeta" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="єОселя" />
+  <title>єОселя — Трекер іпотеки v4</title>
+
+  <style>
+    :root {
+      --bg: #f5f6f8;
+      --bg-soft: #eef1f5;
+      --card: #ffffff;
+      --text: #20242a;
+      --muted: #69707d;
+      --line: #d9dde4;
+      --accent: #f2b21b;
+      --accent-dark: #d99500;
+      --principal: #ffd15c;
+      --interest: #f39c12;
+      --green: #1ea672;
+      --green-soft: #e8f8f1;
+      --green-strong: #149864;
+      --blue-soft: #eaf2ff;
+      --blue: #2b6ef2;
+      --red: #cf4b4b;
+      --orange: #ff9f1c;
+      --orange-soft: #fff3df;
+      --red-soft: #ffeaea;
+      --shadow: 0 10px 24px rgba(0, 0, 0, 0.06);
+      --radius: 16px;
+    }
+
+    html[data-theme="dark"] {
+      --bg: #0f1115;
+      --bg-soft: #171a21;
+      --card: #181c24;
+      --text: #eef2f7;
+      --muted: #9aa5b5;
+      --line: #2a3140;
+      --accent: #ffbf2f;
+      --accent-dark: #d59600;
+      --principal: #ffd15c;
+      --interest: #f39c12;
+      --green: #2ecc8a;
+      --green-soft: rgba(46, 204, 138, 0.10);
+      --green-strong: #22b573;
+      --blue-soft: rgba(43, 110, 242, 0.12);
+      --blue: #73a5ff;
+      --red: #ff6d6d;
+      --orange: #ffb347;
+      --orange-soft: rgba(255, 179, 71, 0.12);
+      --red-soft: rgba(255, 109, 109, 0.12);
+      --shadow: 0 12px 28px rgba(0, 0, 0, 0.28);
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Arial, Helvetica, sans-serif;
+      min-height: 100%;
+    }
+
+    body {
+      min-height: 100dvh;
+      padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 18px);
+    }
+
+    .app {
+      max-width: 1540px;
+      margin: 0 auto;
+      padding: 12px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 14px;
+      margin-bottom: 14px;
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      background: linear-gradient(to bottom, var(--bg) 82%, transparent);
+      padding-top: 6px;
+      padding-bottom: 8px;
+    }
+
+    h1, h2, h3 {
+      margin: 0;
+    }
+
+    .brand h1 {
+      font-size: 27px;
+      margin-bottom: 6px;
+      line-height: 1.1;
+    }
+
+    .subtitle {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .topbar-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .card, .table-card, .chart-card, .extra-card, .progress-card {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 16px;
+      border: 1px solid var(--line);
+    }
+
+    .card-label {
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 8px;
+    }
+
+    .card-value {
+      font-size: 26px;
+      font-weight: 700;
+      line-height: 1.1;
+      word-break: break-word;
+    }
+
+    .card-value.small {
+      font-size: 18px;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+
+    .section-title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .progress-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 14px;
+      border-radius: 999px;
+      background: var(--bg-soft);
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent), var(--accent-dark));
+      border-radius: 999px;
+      transition: width 0.3s ease;
+    }
+
+    .btn, .file-btn {
+      border: none;
+      padding: 10px 14px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 14px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 42px;
+      text-decoration: none;
+      transition: transform 0.08s ease, opacity 0.15s ease;
+    }
+
+    .btn:hover, .file-btn:hover { opacity: 0.94; }
+    .btn:active, .file-btn:active { transform: translateY(1px); }
+
+    .btn-primary { background: var(--blue); color: white; }
+    .btn-secondary { background: #eaf1ff; color: #1846a3; }
+    html[data-theme="dark"] .btn-secondary { background: #1f2a44; color: #c9d8ff; }
+    .btn-green { background: var(--green); color: white; }
+    .btn-danger { background: var(--red); color: white; }
+    .file-btn { background: #efeefe; color: #5147c8; }
+
+    .row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    input[type="text"], input[type="number"], input[type="date"], select {
+      width: 100%;
+      padding: 11px 12px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      outline: none;
+      background: var(--card);
+      color: var(--text);
+      font-size: 14px;
+    }
+
+    .mini-input { max-width: 190px; }
+    .note-input { min-width: 170px; font-size: 13px; padding: 9px 10px; }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      background: var(--bg-soft);
+      color: var(--muted);
+      font-size: 14px;
+      flex-wrap: wrap;
+    }
+
+    .schedule-chart {
+      margin-top: 14px;
+      display: flex;
+      gap: 6px;
+      align-items: flex-end;
+      min-height: 290px;
+      overflow-x: auto;
+      padding-bottom: 10px;
+    }
+
+    .bar-group {
+      width: 24px;
+      min-width: 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      position: relative;
+    }
+
+    .bar-principal {
+      background: var(--principal);
+      border-top-left-radius: 6px;
+      border-top-right-radius: 6px;
+    }
+
+    .bar-interest {
+      background: var(--interest);
+    }
+
+    .bar-group.done .bar-principal,
+    .bar-group.done .bar-interest {
+      opacity: 0.55;
+      filter: saturate(0.7);
+    }
+
+    .bar-group.current::after {
+      content: "";
+      position: absolute;
+      inset: -6px -3px -6px -3px;
+      border: 2px solid var(--blue);
+      border-radius: 8px;
+      pointer-events: none;
+    }
+
+    .bar-label {
+      margin-top: 6px;
+      font-size: 10px;
+      color: var(--muted);
+      text-align: center;
+      writing-mode: vertical-rl;
+      transform: rotate(180deg);
+      height: 70px;
+    }
+
+    .legend {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .legend-box {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
+      margin-right: 6px;
+    }
+
+    .legend-box.principal { background: var(--principal); }
+    .legend-box.interest { background: var(--interest); }
+    .legend-box.done { background: var(--green-strong); }
+    .legend-box.current { background: var(--blue); }
+
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .weekday, .calendar-day {
+      border-radius: 12px;
+      padding: 10px;
+      border: 1px solid var(--line);
+      min-height: 86px;
+    }
+
+    .weekday {
+      background: var(--bg-soft);
+      color: var(--muted);
+      font-weight: 700;
+      min-height: auto;
+      text-align: center;
+      padding: 8px;
+    }
+
+    .calendar-day.empty {
+      background: transparent;
+      border-style: dashed;
+      min-height: 60px;
+    }
+
+    .calendar-day .day-num {
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .calendar-day .day-text {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.35;
+      white-space: pre-line;
+    }
+
+    .status-overdue { background: var(--red-soft); }
+    .status-today { background: var(--blue-soft); }
+    .status-soon { background: var(--orange-soft); }
+    .status-paid { background: var(--green-soft); }
+    .status-planned { background: var(--bg-soft); }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 5px 9px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .badge-overdue { background: var(--red-soft); color: var(--red); }
+    .badge-today { background: var(--blue-soft); color: var(--blue); }
+    .badge-soon { background: var(--orange-soft); color: var(--orange); }
+    .badge-paid { background: var(--green-soft); color: var(--green-strong); }
+    .badge-planned { background: var(--bg-soft); color: var(--muted); }
+
+    .table-wrap {
+      overflow: auto;
+      margin-top: 12px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 1300px;
+      background: var(--card);
+    }
+
+    thead th {
+      position: sticky;
+      top: 0;
+      background: #fff8df;
+      color: #3a2b00;
+      z-index: 1;
+    }
+
+    html[data-theme="dark"] thead th {
+      background: #33290d;
+      color: #ffe7a0;
+    }
+
+    th, td {
+      border-bottom: 1px solid var(--line);
+      padding: 10px 12px;
+      text-align: right;
+      white-space: nowrap;
+      font-size: 14px;
+      vertical-align: middle;
+    }
+
+    th:first-child, td:first-child,
+    th:nth-child(2), td:nth-child(2) {
+      text-align: center;
+    }
+
+    tbody tr.paid-row { background: var(--green-soft); }
+    tbody tr.current-row { background: var(--blue-soft); }
+    tbody tr.overdue-row { background: var(--red-soft); }
+    tbody tr.soon-row { background: var(--orange-soft); }
+    tbody tr:hover { background: rgba(255, 209, 92, 0.10); }
+
+    .pay-checkbox {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--green);
+      cursor: pointer;
+    }
+
+    .footer-note {
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .muted { color: var(--muted); }
+    .saving-good { color: var(--green-strong); font-weight: 700; }
+
+    @media (max-width: 1240px) {
+      .summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 760px) {
+      .app { padding: 10px; }
+      .topbar {
+        position: static;
+        background: transparent;
+      }
+      .topbar, .section-title-row, .progress-head {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .topbar-actions > *, .topbar-actions label, .row > * {
+        width: 100%;
+      }
+      .summary-grid { grid-template-columns: 1fr; }
+      .brand h1 { font-size: 23px; }
+      .card-value { font-size: 22px; }
+      .mini-input { max-width: 100%; }
+      .calendar-grid { grid-template-columns: repeat(2, 1fr); }
+      .weekday { display: none; }
+    }
+  </style>
 </head>
 <body>
   <div class="app">
     <header class="topbar">
-      <div>
-        <h1>єОселя — трекер платежів v2</h1>
-        <p class="subtitle">1 000 000 грн • 7% річних • 20 років • GitHub Pages</p>
+      <div class="brand">
+        <h1>єОселя — трекер іпотеки v4</h1>
+        <p class="subtitle">PWA • темна тема • дострокове • календар • CSV • перерахунок графіка</p>
       </div>
 
       <div class="topbar-actions">
-        <button id="markTillTodayBtn" class="primary-btn">Позначити до сьогодні</button>
-        <button id="exportBtn" class="secondary-btn">Експорт JSON</button>
+        <button id="themeToggleBtn" class="btn btn-secondary">🌙 Темна тема</button>
+        <button id="installBtn" class="btn btn-secondary" style="display:none;">⬇️ Встановити</button>
+        <button id="markTillTodayBtn" class="btn btn-primary">Позначити до сьогодні</button>
+        <button id="exportCsvBtn" class="btn btn-secondary">Експорт CSV</button>
+        <button id="exportBtn" class="btn btn-secondary">Експорт JSON</button>
         <label class="file-btn">
           Імпорт JSON
           <input type="file" id="importInput" accept="application/json" hidden />
         </label>
-        <button id="resetPaidBtn" class="danger-btn">Скинути все</button>
+        <button id="resetPaidBtn" class="btn btn-danger">Скинути все</button>
       </div>
     </header>
 
@@ -47,7 +526,7 @@
         <div class="card-value" id="paidInterest">—</div>
       </div>
       <div class="card">
-        <div class="card-label">Лишилось сплатити</div>
+        <div class="card-label">Орієнтовно лишилось</div>
         <div class="card-value" id="remainingTotal">—</div>
       </div>
       <div class="card">
@@ -60,39 +539,127 @@
       </div>
     </section>
 
-    <section class="progress-card">
-      <div class="progress-head">
-        <span>Прогрес погашення тіла</span>
-        <span id="progressText">0%</span>
+    <section class="grid-2">
+      <div>
+        <section class="progress-card">
+          <div class="progress-head">
+            <span>Прогрес погашення тіла</span>
+            <span id="progressText">0%</span>
+          </div>
+          <div class="progress-bar">
+            <div id="progressFill" class="progress-fill"></div>
+          </div>
+        </section>
+
+        <section class="chart-card">
+          <div class="section-title-row">
+            <h2>Графік по періоду</h2>
+            <div class="legend">
+              <span><i class="legend-box principal"></i> Тіло</span>
+              <span><i class="legend-box interest"></i> Відсотки</span>
+              <span><i class="legend-box done"></i> Сплачено</span>
+              <span><i class="legend-box current"></i> Поточний</span>
+            </div>
+          </div>
+          <div id="scheduleChart" class="schedule-chart"></div>
+        </section>
       </div>
-      <div class="progress-bar">
-        <div id="progressFill" class="progress-fill"></div>
+
+      <div>
+        <section class="extra-card" style="margin-bottom:14px;">
+          <div class="section-title-row">
+            <h2>Дострокове погашення</h2>
+          </div>
+          <div class="row" style="margin-top:12px;">
+            <input type="date" id="prepayDate" class="mini-input" />
+            <input type="number" id="prepayAmount" class="mini-input" min="0" step="0.01" placeholder="Сума, грн" />
+            <button id="addPrepayBtn" class="btn btn-green">Додати</button>
+          </div>
+          <div class="footer-note">
+            У цій версії після дострокового перераховується прогнозний залишок тіла і наступні відсотки на основі фактичного місячного коефіцієнта з твого графіка, тому це значно ближче до реального перерахунку, ніж проста “економія по формулі”. [cite:2]
+          </div>
+        </section>
+
+        <section class="extra-card" style="margin-bottom:14px;">
+          <div class="section-title-row">
+            <h2>Економія на %</h2>
+          </div>
+          <div class="row" style="margin-top:12px;">
+            <div class="pill">Базові %: <strong id="baseInterestTotal">—</strong></div>
+          </div>
+          <div class="row" style="margin-top:10px;">
+            <div class="pill">Прогнозні %: <strong id="forecastInterestTotal">—</strong></div>
+          </div>
+          <div class="row" style="margin-top:10px;">
+            <div class="pill">Зекономлено: <strong id="savedInterest" class="saving-good">—</strong></div>
+          </div>
+          <div class="row" style="margin-top:10px;">
+            <div class="pill">Достроково внесено: <strong id="prepaidTotal">—</strong></div>
+          </div>
+        </section>
+
+        <section class="extra-card">
+          <div class="section-title-row">
+            <h2>Список дострокових</h2>
+          </div>
+          <div id="prepayList" style="margin-top:12px;" class="muted">Ще немає дострокових платежів.</div>
+        </section>
       </div>
     </section>
 
-    <section class="chart-card">
-      <div class="section-title-row">
-        <h2>Графік по місяцях</h2>
-        <div class="legend">
-          <span><i class="legend-box principal"></i> Тіло</span>
-          <span><i class="legend-box interest"></i> Відсотки</span>
-          <span><i class="legend-box done"></i> Сплачено</span>
-          <span><i class="legend-box current"></i> Поточний місяць</span>
+    <section class="grid-3">
+      <section class="extra-card">
+        <div class="section-title-row">
+          <h2>Календар платежів</h2>
+          <div class="row">
+            <select id="calendarMonth"></select>
+            <select id="calendarYear"></select>
+          </div>
         </div>
-      </div>
-      <div id="scheduleChart" class="schedule-chart"></div>
+        <div class="calendar-grid" id="calendarGrid"></div>
+      </section>
+
+      <section class="extra-card">
+        <div class="section-title-row">
+          <h2>Статуси</h2>
+        </div>
+        <div class="row" style="margin-top:12px;">
+          <span class="status-badge badge-overdue">Прострочено</span>
+          <span class="status-badge badge-today">Сьогодні</span>
+          <span class="status-badge badge-soon">Скоро</span>
+          <span class="status-badge badge-planned">Заплановано</span>
+          <span class="status-badge badge-paid">Сплачено</span>
+        </div>
+        <div class="footer-note">
+          “Скоро” означає, що дата платежу настане протягом найближчих 7 днів. “Прострочено” — дата вже минула і платіж не позначено як сплачений. [cite:2]
+        </div>
+      </section>
+
+      <section class="extra-card">
+        <div class="section-title-row">
+          <h2>Фільтри і сортування</h2>
+        </div>
+        <div class="row" style="margin-top:12px;">
+          <input type="text" id="searchInput" placeholder="Пошук по даті..." />
+          <label class="pill"><input type="checkbox" id="unpaidOnly" /> Тільки несплачені</label>
+          <select id="sortField">
+            <option value="date">Дата</option>
+            <option value="total">Сума</option>
+            <option value="interest">Відсотки</option>
+            <option value="principal">Тіло</option>
+            <option value="remainingAfterProjected">Залишок</option>
+          </select>
+          <select id="sortDirection">
+            <option value="asc">По зростанню</option>
+            <option value="desc">По спаданню</option>
+          </select>
+        </div>
+      </section>
     </section>
 
     <section class="table-card">
-      <div class="section-title-row with-tools">
+      <div class="section-title-row">
         <h2>Графік платежів</h2>
-        <div class="filters">
-          <input type="text" id="searchInput" placeholder="Пошук по даті..." />
-          <label class="toggle">
-            <input type="checkbox" id="unpaidOnly" />
-            <span>Тільки несплачені</span>
-          </label>
-        </div>
       </div>
 
       <div class="table-wrap">
@@ -100,20 +667,737 @@
           <thead>
             <tr>
               <th>Сплачено</th>
+              <th>Статус</th>
               <th>Дата</th>
-              <th>Капітал</th>
-              <th>Погашення %</th>
-              <th>Сума</th>
-              <th>Залишок тіла</th>
+              <th>Тіло</th>
+              <th>Базові %</th>
+              <th>Перерах. %</th>
+              <th>Базова сума</th>
+              <th>Нова сума</th>
+              <th>Залишок після</th>
+              <th>Дострокове</th>
               <th>Нотатка</th>
             </tr>
           </thead>
           <tbody id="paymentsTable"></tbody>
         </table>
       </div>
+
+      <div class="footer-note">
+        Таблиця базується на фактичному графіку користувача по єОселі та додає прогнозний перерахунок після дострокового погашення, виходячи з тієї ж логіки зменшення залишку боргу і щомісячних відсотків від поточного залишку. [cite:2][cite:5]
+      </div>
     </section>
   </div>
 
-  <script src="script.js"></script>
-</body>
-</html>
+  <script>
+    const STORAGE_KEY = "eoselia_paid_months_v4";
+    const NOTES_KEY = "eoselia_payment_notes_v4";
+    const PREPAY_KEY = "eoselia_prepayments_v4";
+    const THEME_KEY = "eoselia_theme_v4";
+    const INITIAL_AMOUNT = 1000000;
+
+    const payments = [
+      { date: "25/10/2024", principal: 4167.00, interest: 2868.85, total: 7035.85 },
+      { date: "25/11/2024", principal: 4167.00, interest: 5923.38, total: 10090.38 },
+      { date: "25/12/2024", principal: 4167.00, interest: 5709.02, total: 9876.02 },
+      { date: "25/01/2025", principal: 4167.00, interest: 5873.97, total: 10040.97 },
+      { date: "25/02/2025", principal: 4167.00, interest: 5865.29, total: 10032.29 },
+      { date: "25/03/2025", principal: 4167.00, interest: 5277.16, total: 9444.16 },
+      { date: "25/04/2025", principal: 4167.00, interest: 5815.74, total: 9982.74 },
+      { date: "25/05/2025", principal: 4167.00, interest: 5604.78, total: 9771.78 },
+      { date: "25/06/2025", principal: 4167.00, interest: 5766.19, total: 9933.19 },
+      { date: "25/07/2025", principal: 4167.00, interest: 5556.83, total: 9723.83 },
+      { date: "25/08/2025", principal: 4167.00, interest: 5716.65, total: 9883.65 },
+      { date: "25/09/2025", principal: 4167.00, interest: 5691.87, total: 9858.87 },
+      { date: "25/10/2025", principal: 4167.00, interest: 5484.91, total: 9651.91 },
+      { date: "25/11/2025", principal: 4167.00, interest: 5642.32, total: 9809.32 },
+      { date: "25/12/2025", principal: 4167.00, interest: 5436.96, total: 9603.96 },
+      { date: "25/01/2026", principal: 4167.00, interest: 5592.78, total: 9759.78 },
+      { date: "25/02/2026", principal: 4167.00, interest: 5568.01, total: 9735.01 },
+      { date: "25/03/2026", principal: 4167.00, interest: 5008.65, total: 9175.65 },
+      { date: "25/04/2026", principal: 4167.00, interest: 5518.46, total: 9685.46 },
+      { date: "25/05/2026", principal: 4167.00, interest: 5317.09, total: 9484.09 },
+      { date: "25/06/2026", principal: 4167.00, interest: 5468.91, total: 9635.91 },
+      { date: "25/07/2026", principal: 4167.00, interest: 5269.14, total: 9436.14 },
+      { date: "25/08/2026", principal: 4167.00, interest: 5419.37, total: 9586.37 },
+      { date: "25/09/2026", principal: 4167.00, interest: 5394.59, total: 9561.59 },
+      { date: "25/10/2026", principal: 4167.00, interest: 5197.22, total: 9364.22 },
+      { date: "25/11/2026", principal: 4167.00, interest: 5345.04, total: 9512.04 },
+      { date: "25/12/2026", principal: 4167.00, interest: 5149.27, total: 9316.27 },
+      { date: "25/01/2027", principal: 4167.00, interest: 5295.50, total: 9462.50 },
+      { date: "25/02/2027", principal: 4167.00, interest: 5270.72, total: 9437.72 },
+      { date: "25/03/2027", principal: 4167.00, interest: 4740.13, total: 8907.13 },
+      { date: "25/04/2027", principal: 4167.00, interest: 5221.17, total: 9388.17 },
+      { date: "25/05/2027", principal: 4167.00, interest: 5029.39, total: 9196.39 },
+      { date: "25/06/2027", principal: 4167.00, interest: 5171.63, total: 9338.63 },
+      { date: "25/07/2027", principal: 4167.00, interest: 4981.44, total: 9148.44 },
+      { date: "25/08/2027", principal: 4167.00, interest: 5122.08, total: 9289.08 },
+      { date: "25/09/2027", principal: 4167.00, interest: 5097.30, total: 9264.30 },
+      { date: "25/10/2027", principal: 4167.00, interest: 4909.52, total: 9076.52 },
+      { date: "25/11/2027", principal: 4167.00, interest: 5047.76, total: 9214.76 },
+      { date: "25/12/2027", principal: 4167.00, interest: 4861.57, total: 9028.57 },
+      { date: "25/01/2028", principal: 4167.00, interest: 4998.21, total: 9165.21 },
+      { date: "25/02/2028", principal: 4167.00, interest: 4959.85, total: 9126.85 },
+      { date: "25/03/2028", principal: 4167.00, interest: 4617.99, total: 8784.99 },
+      { date: "25/04/2028", principal: 4167.00, interest: 4910.44, total: 9077.44 },
+      { date: "25/05/2028", principal: 4167.00, interest: 4728.74, total: 8895.74 },
+      { date: "25/06/2028", principal: 4167.00, interest: 4861.02, total: 9028.02 },
+      { date: "25/07/2028", principal: 4167.00, interest: 4689.93, total: 8856.93 },
+      { date: "25/08/2028", principal: 4167.00, interest: 4811.61, total: 8978.61 },
+      { date: "25/09/2028", principal: 4167.00, interest: 4786.91, total: 8953.91 },
+      { date: "25/10/2028", principal: 4167.00, interest: 4609.19, total: 8776.19 },
+      { date: "25/11/2028", principal: 4167.00, interest: 4737.50, total: 8904.50 },
+      { date: "25/12/2028", principal: 4167.00, interest: 4561.38, total: 8728.38 },
+      { date: "25/01/2029", principal: 4167.00, interest: 4688.08, total: 8855.08 },
+      { date: "25/02/2029", principal: 4167.00, interest: 4676.15, total: 8843.15 },
+      { date: "25/03/2029", principal: 4167.00, interest: 4203.10, total: 8370.10 },
+      { date: "25/04/2029", principal: 4167.00, interest: 4626.61, total: 8793.61 },
+      { date: "25/05/2029", principal: 4167.00, interest: 4454.01, total: 8621.01 },
+      { date: "25/06/2029", principal: 4167.00, interest: 4577.06, total: 8744.06 },
+      { date: "25/07/2029", principal: 4167.00, interest: 4406.06, total: 8573.06 },
+      { date: "25/08/2029", principal: 4167.00, interest: 4527.51, total: 8694.51 },
+      { date: "25/09/2029", principal: 4167.00, interest: 4502.74, total: 8669.74 },
+      { date: "25/10/2029", principal: 4167.00, interest: 4334.13, total: 8501.13 },
+      { date: "25/11/2029", principal: 4167.00, interest: 4453.19, total: 8620.19 },
+      { date: "25/12/2029", principal: 4167.00, interest: 4286.18, total: 8453.18 },
+      { date: "25/01/2030", principal: 4167.00, interest: 4403.64, total: 8570.64 },
+      { date: "25/02/2030", principal: 4167.00, interest: 4378.87, total: 8545.87 },
+      { date: "25/03/2030", principal: 4167.00, interest: 3934.58, total: 8101.58 },
+      { date: "25/04/2030", principal: 4167.00, interest: 4329.32, total: 8496.32 },
+      { date: "25/05/2030", principal: 4167.00, interest: 4166.32, total: 8333.32 },
+      { date: "25/06/2030", principal: 4167.00, interest: 4279.78, total: 8446.78 },
+      { date: "25/07/2030", principal: 4167.00, interest: 4118.37, total: 8285.37 },
+      { date: "25/08/2030", principal: 4167.00, interest: 4230.23, total: 8397.23 },
+      { date: "25/09/2030", principal: 4167.00, interest: 4205.46, total: 8372.46 },
+      { date: "25/10/2030", principal: 4167.00, interest: 4046.44, total: 8213.44 },
+      { date: "25/11/2030", principal: 4167.00, interest: 4155.91, total: 8322.91 },
+      { date: "25/12/2030", principal: 4167.00, interest: 3998.49, total: 8165.49 },
+      { date: "25/01/2031", principal: 4167.00, interest: 4106.36, total: 8273.36 },
+      { date: "25/02/2031", principal: 4167.00, interest: 4081.59, total: 8248.59 },
+      { date: "25/03/2031", principal: 4167.00, interest: 3666.07, total: 7833.07 },
+      { date: "25/04/2031", principal: 4167.00, interest: 4032.04, total: 8199.04 },
+      { date: "25/05/2031", principal: 4167.00, interest: 3878.62, total: 8045.62 },
+      { date: "25/06/2031", principal: 4167.00, interest: 3982.49, total: 8149.49 },
+      { date: "25/07/2031", principal: 4167.00, interest: 3830.67, total: 7997.67 },
+      { date: "25/08/2031", principal: 4167.00, interest: 3932.94, total: 8099.94 },
+      { date: "25/09/2031", principal: 4167.00, interest: 3908.17, total: 8075.17 },
+      { date: "25/10/2031", principal: 4167.00, interest: 3750.74, total: 7925.74 },
+      { date: "25/11/2031", principal: 4167.00, interest: 3858.62, total: 8025.62 },
+      { date: "25/12/2031", principal: 4167.00, interest: 3710.79, total: 7877.79 },
+      { date: "25/01/2032", principal: 4167.00, interest: 3809.07, total: 7976.07 },
+      { date: "25/02/2032", principal: 4167.00, interest: 3773.97, total: 7940.97 },
+      { date: "25/03/2032", principal: 4167.00, interest: 3508.60, total: 7675.60 },
+      { date: "25/04/2032", principal: 4167.00, interest: 3724.55, total: 7891.55 },
+      { date: "25/05/2032", principal: 4167.00, interest: 3581.11, total: 7748.11 },
+      { date: "25/06/2032", principal: 4167.00, interest: 3675.14, total: 7842.14 },
+      { date: "25/07/2032", principal: 4167.00, interest: 3533.29, total: 7700.29 },
+      { date: "25/08/2032", principal: 4167.00, interest: 3625.72, total: 7792.72 },
+      { date: "25/09/2032", principal: 4167.00, interest: 3601.02, total: 7768.02 },
+      { date: "25/10/2032", principal: 4167.00, interest: 3461.57, total: 7628.57 },
+      { date: "25/11/2032", principal: 4167.00, interest: 3551.61, total: 7718.61 },
+      { date: "25/12/2032", principal: 4167.00, interest: 3413.74, total: 7580.74 },
+      { date: "25/01/2033", principal: 4167.00, interest: 3502.20, total: 7669.20 },
+      { date: "25/02/2033", principal: 4167.00, interest: 3487.02, total: 7654.02 },
+      { date: "25/03/2033", principal: 4167.00, interest: 3129.05, total: 7296.05 },
+      { date: "25/04/2033", principal: 4167.00, interest: 3437.47, total: 7604.47 },
+      { date: "25/05/2033", principal: 4167.00, interest: 3303.23, total: 7470.23 },
+      { date: "25/06/2033", principal: 4167.00, interest: 3387.92, total: 7554.92 },
+      { date: "25/07/2033", principal: 4167.00, interest: 3255.28, total: 7422.28 },
+      { date: "25/08/2033", principal: 4167.00, interest: 3338.38, total: 7505.38 },
+      { date: "25/09/2033", principal: 4167.00, interest: 3313.60, total: 7480.60 },
+      { date: "25/10/2033", principal: 4167.00, interest: 3183.36, total: 7350.36 },
+      { date: "25/11/2033", principal: 4167.00, interest: 3264.05, total: 7431.05 },
+      { date: "25/12/2033", principal: 4167.00, interest: 3135.41, total: 7302.41 },
+      { date: "25/01/2034", principal: 4167.00, interest: 3214.51, total: 7381.51 },
+      { date: "25/02/2034", principal: 4167.00, interest: 3189.73, total: 7356.73 },
+      { date: "25/03/2034", principal: 4167.00, interest: 2860.53, total: 7027.53 },
+      { date: "25/04/2034", principal: 4167.00, interest: 3140.18, total: 7307.18 },
+      { date: "25/05/2034", principal: 4167.00, interest: 3015.53, total: 7182.53 },
+      { date: "25/06/2034", principal: 4167.00, interest: 3090.64, total: 7257.64 },
+      { date: "25/07/2034", principal: 4167.00, interest: 2967.58, total: 7134.58 },
+      { date: "25/08/2034", principal: 4167.00, interest: 3041.09, total: 7208.09 },
+      { date: "25/09/2034", principal: 4167.00, interest: 3016.31, total: 7183.31 },
+      { date: "25/10/2034", principal: 4167.00, interest: 2895.67, total: 7062.67 },
+      { date: "25/11/2034", principal: 4167.00, interest: 2966.78, total: 7133.78 },
+      { date: "25/12/2034", principal: 4167.00, interest: 2847.72, total: 7014.72 },
+      { date: "25/01/2035", principal: 4167.00, interest: 2917.23, total: 7084.23 },
+      { date: "25/02/2035", principal: 4167.00, interest: 2892.45, total: 7059.45 },
+      { date: "25/03/2035", principal: 4167.00, interest: 2592.02, total: 6759.02 },
+      { date: "25/04/2035", principal: 4167.00, interest: 2842.90, total: 7009.90 },
+      { date: "25/05/2035", principal: 4167.00, interest: 2727.84, total: 6894.84 },
+      { date: "25/06/2035", principal: 4167.00, interest: 2793.36, total: 6960.36 },
+      { date: "25/07/2035", principal: 4167.00, interest: 2679.89, total: 6846.89 },
+      { date: "25/08/2035", principal: 4167.00, interest: 2743.81, total: 6910.81 },
+      { date: "25/09/2035", principal: 4167.00, interest: 2719.03, total: 6886.03 },
+      { date: "25/10/2035", principal: 4167.00, interest: 2607.97, total: 6774.97 },
+      { date: "25/11/2035", principal: 4167.00, interest: 2669.49, total: 6836.49 },
+      { date: "25/12/2035", principal: 4167.00, interest: 2560.02, total: 6727.02 },
+      { date: "25/01/2036", principal: 4167.00, interest: 2619.94, total: 6786.94 },
+      { date: "25/02/2036", principal: 4167.00, interest: 2588.08, total: 6755.08 },
+      { date: "25/03/2036", principal: 4167.00, interest: 2399.22, total: 6566.22 },
+      { date: "25/04/2036", principal: 4167.00, interest: 2538.67, total: 6705.67 },
+      { date: "25/05/2036", principal: 4167.00, interest: 2433.48, total: 6600.48 },
+      { date: "25/06/2036", principal: 4167.00, interest: 2489.25, total: 6656.25 },
+      { date: "25/07/2036", principal: 4167.00, interest: 2385.66, total: 6552.66 },
+      { date: "25/08/2036", principal: 4167.00, interest: 2439.84, total: 6606.84 },
+      { date: "25/09/2036", principal: 4167.00, interest: 2415.13, total: 6582.13 },
+      { date: "25/10/2036", principal: 4167.00, interest: 2313.93, total: 6480.93 },
+      { date: "25/11/2036", principal: 4167.00, interest: 2365.73, total: 6532.73 },
+      { date: "25/12/2036", principal: 4167.00, interest: 2266.12, total: 6433.12 },
+      { date: "25/01/2037", principal: 4167.00, interest: 2316.31, total: 6483.31 },
+      { date: "25/02/2037", principal: 4167.00, interest: 2297.89, total: 6464.89 },
+      { date: "25/03/2037", principal: 4167.00, interest: 2054.99, total: 6221.99 },
+      { date: "25/04/2037", principal: 4167.00, interest: 2248.34, total: 6415.34 },
+      { date: "25/05/2037", principal: 4167.00, interest: 2152.45, total: 6319.45 },
+      { date: "25/06/2037", principal: 4167.00, interest: 2198.79, total: 6365.79 },
+      { date: "25/07/2037", principal: 4167.00, interest: 2104.50, total: 6271.50 },
+      { date: "25/08/2037", principal: 4167.00, interest: 2149.24, total: 6316.24 },
+      { date: "25/09/2037", principal: 4167.00, interest: 2124.47, total: 6291.47 },
+      { date: "25/10/2037", principal: 4167.00, interest: 2032.58, total: 6199.58 },
+      { date: "25/11/2037", principal: 4167.00, interest: 2074.92, total: 6241.92 },
+      { date: "25/12/2037", principal: 4167.00, interest: 1984.63, total: 6151.63 },
+      { date: "25/01/2038", principal: 4167.00, interest: 2025.37, total: 6192.37 },
+      { date: "25/02/2038", principal: 4167.00, interest: 2000.60, total: 6167.60 },
+      { date: "25/03/2038", principal: 4167.00, interest: 1786.47, total: 5953.47 },
+      { date: "25/04/2038", principal: 4167.00, interest: 1951.05, total: 6118.05 },
+      { date: "25/05/2038", principal: 4167.00, interest: 1864.76, total: 6031.76 },
+      { date: "25/06/2038", principal: 4167.00, interest: 1901.50, total: 6068.50 },
+      { date: "25/07/2038", principal: 4167.00, interest: 1816.81, total: 5983.81 },
+      { date: "25/08/2038", principal: 4167.00, interest: 1851.95, total: 6018.95 },
+      { date: "25/09/2038", principal: 4167.00, interest: 1827.18, total: 5994.18 },
+      { date: "25/10/2038", principal: 4167.00, interest: 1744.88, total: 5911.88 },
+      { date: "25/11/2038", principal: 4167.00, interest: 1777.63, total: 5944.63 },
+      { date: "25/12/2038", principal: 4167.00, interest: 1696.93, total: 5863.93 },
+      { date: "25/01/2039", principal: 4167.00, interest: 1728.08, total: 5895.08 },
+      { date: "25/02/2039", principal: 4167.00, interest: 1703.32, total: 5870.32 },
+      { date: "25/03/2039", principal: 4167.00, interest: 1517.96, total: 5684.96 },
+      { date: "25/04/2039", principal: 4167.00, interest: 1653.77, total: 5820.77 },
+      { date: "25/05/2039", principal: 4167.00, interest: 1577.07, total: 5744.07 },
+      { date: "25/06/2039", principal: 4167.00, interest: 1604.22, total: 5771.22 },
+      { date: "25/07/2039", principal: 4167.00, interest: 1529.12, total: 5696.12 },
+      { date: "25/08/2039", principal: 4167.00, interest: 1554.67, total: 5721.67 },
+      { date: "25/09/2039", principal: 4167.00, interest: 1529.90, total: 5696.90 },
+      { date: "25/10/2039", principal: 4167.00, interest: 1457.19, total: 5624.19 },
+      { date: "25/11/2039", principal: 4167.00, interest: 1480.35, total: 5647.35 },
+      { date: "25/12/2039", principal: 4167.00, interest: 1409.24, total: 5576.24 },
+      { date: "25/01/2040", principal: 4167.00, interest: 1430.80, total: 5597.80 },
+      { date: "25/02/2040", principal: 4167.00, interest: 1402.18, total: 5569.18 },
+      { date: "25/03/2040", principal: 4167.00, interest: 1289.85, total: 5456.85 },
+      { date: "25/04/2040", principal: 4167.00, interest: 1352.78, total: 5519.78 },
+      { date: "25/05/2040", principal: 4167.00, interest: 1285.84, total: 5452.84 },
+      { date: "25/06/2040", principal: 4167.00, interest: 1303.37, total: 5470.37 },
+      { date: "25/07/2040", principal: 4167.00, interest: 1238.03, total: 5405.03 },
+      { date: "25/08/2040", principal: 4167.00, interest: 1253.95, total: 5420.95 },
+      { date: "25/09/2040", principal: 4167.00, interest: 1229.24, total: 5396.24 },
+      { date: "25/10/2040", principal: 4167.00, interest: 1166.30, total: 5333.30 },
+      { date: "25/11/2040", principal: 4167.00, interest: 1179.84, total: 5346.84 },
+      { date: "25/12/2040", principal: 4167.00, interest: 1118.48, total: 5285.48 },
+      { date: "25/01/2041", principal: 4167.00, interest: 1130.42, total: 5297.42 },
+      { date: "25/02/2041", principal: 4167.00, interest: 1108.74, total: 5275.74 },
+      { date: "25/03/2041", principal: 4167.00, interest: 980.92, total: 5147.92 },
+      { date: "25/04/2041", principal: 4167.00, interest: 1059.20, total: 5226.20 },
+      { date: "25/05/2041", principal: 4167.00, interest: 1001.68, total: 5168.68 },
+      { date: "25/06/2041", principal: 4167.00, interest: 1009.65, total: 5176.65 },
+      { date: "25/07/2041", principal: 4167.00, interest: 953.73, total: 5120.73 },
+      { date: "25/08/2041", principal: 4167.00, interest: 960.11, total: 5127.11 },
+      { date: "25/09/2041", principal: 4167.00, interest: 935.33, total: 5102.33 },
+      { date: "25/10/2041", principal: 4167.00, interest: 881.80, total: 5048.80 },
+      { date: "25/11/2041", principal: 4167.00, interest: 885.78, total: 5052.78 },
+      { date: "25/12/2041", principal: 4167.00, interest: 833.85, total: 5000.85 },
+      { date: "25/01/2042", principal: 4167.00, interest: 836.24, total: 5003.24 },
+      { date: "25/02/2042", principal: 4167.00, interest: 811.46, total: 4978.46 },
+      { date: "25/03/2042", principal: 4167.00, interest: 712.41, total: 4879.41 },
+      { date: "25/04/2042", principal: 4167.00, interest: 761.91, total: 4928.91 },
+      { date: "25/05/2042", principal: 4167.00, interest: 713.98, total: 4880.98 },
+      { date: "25/06/2042", principal: 4167.00, interest: 712.37, total: 4879.37 },
+      { date: "25/07/2042", principal: 4167.00, interest: 666.03, total: 4833.03 },
+      { date: "25/08/2042", principal: 4167.00, interest: 662.82, total: 4829.82 },
+      { date: "25/09/2042", principal: 4167.00, interest: 638.04, total: 4805.04 },
+      { date: "25/10/2042", principal: 4167.00, interest: 594.11, total: 4761.11 },
+      { date: "25/11/2042", principal: 4167.00, interest: 588.50, total: 4755.50 },
+      { date: "25/12/2042", principal: 4167.00, interest: 546.16, total: 4713.16 },
+      { date: "25/01/2043", principal: 4167.00, interest: 538.95, total: 4705.95 },
+      { date: "25/02/2043", principal: 4167.00, interest: 514.17, total: 4681.17 },
+      { date: "25/03/2043", principal: 4167.00, interest: 443.89, total: 4610.89 },
+      { date: "25/04/2043", principal: 4167.00, interest: 464.63, total: 4631.63 },
+      { date: "25/05/2043", principal: 4167.00, interest: 426.28, total: 4593.28 },
+      { date: "25/06/2043", principal: 4167.00, interest: 415.09, total: 4582.09 },
+      { date: "25/07/2043", principal: 4167.00, interest: 378.34, total: 4545.34 },
+      { date: "25/08/2043", principal: 4167.00, interest: 365.54, total: 4532.54 },
+      { date: "25/09/2043", principal: 4167.00, interest: 340.77, total: 4507.77 },
+      { date: "25/10/2043", principal: 4167.00, interest: 306.42, total: 4473.42 },
+      { date: "25/11/2043", principal: 4167.00, interest: 291.22, total: 4458.22 },
+      { date: "25/12/2043", principal: 4167.00, interest: 258.47, total: 4425.47 },
+      { date: "25/01/2044", principal: 4167.00, interest: 241.67, total: 4408.67 },
+      { date: "25/02/2044", principal: 4167.00, interest: 216.30, total: 4383.30 },
+      { date: "25/03/2044", principal: 4167.00, interest: 180.47, total: 4347.47 },
+      { date: "25/04/2044", principal: 4167.00, interest: 166.89, total: 4333.89 },
+      { date: "25/05/2044", principal: 4167.00, interest: 138.22, total: 4305.22 },
+      { date: "25/06/2044", principal: 4167.00, interest: 117.48, total: 4284.48 },
+      { date: "25/07/2044", principal: 4167.00, interest: 90.39, total: 4257.39 },
+      { date: "25/08/2044", principal: 4167.00, interest: 68.06, total: 4235.06 },
+      { date: "15/09/2044", principal: 4087.00, interest: 54.30, total: 4141.30 }
+    ];
+
+    function formatMoney(value) {
+      return new Intl.NumberFormat("uk-UA", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      }).format(Number(value || 0)) + " грн";
+    }
+
+    function parseDate(dateStr) {
+      const [day, month, year] = dateStr.split("/").map(Number);
+      return new Date(year, month - 1, day);
+    }
+
+    function inputDateToDisplay(value) {
+      const [year, month, day] = value.split("-");
+      return `${day}/${month}/${year}`;
+    }
+
+    function loadJSON(key, fallback) {
+      try {
+        return JSON.parse(localStorage.getItem(key)) ?? fallback;
+      } catch {
+        return fallback;
+      }
+    }
+
+    function saveJSON(key, value) {
+      localStorage.setItem(key, JSON.stringify(value));
+    }
+
+    function loadTheme() {
+      return localStorage.getItem(THEME_KEY) || "light";
+    }
+
+    function applyTheme(theme) {
+      document.documentElement.setAttribute("data-theme", theme);
+      localStorage.setItem(THEME_KEY, theme);
+      document.getElementById("themeToggleBtn").textContent =
+        theme === "dark" ? "☀️ Світла тема" : "🌙 Темна тема";
+      document.getElementById("themeColorMeta").setAttribute("content", theme === "dark" ? "#0f1115" : "#f5f6f8");
+    }
+
+    function buildBaseData() {
+      let remaining = INITIAL_AMOUNT;
+      return payments.map((item, index) => {
+        const monthlyRate = item.interest / Math.max(remaining, 1);
+        remaining = Math.max(0, +(remaining - item.principal).toFixed(2));
+        return {
+          ...item,
+          id: index,
+          monthlyRate,
+          remainingAfter: remaining
+        };
+      });
+    }
+
+    const fullData = buildBaseData();
+    let paidMap = loadJSON(STORAGE_KEY, {});
+    let notesMap = loadJSON(NOTES_KEY, {});
+    let prepayments = loadJSON(PREPAY_KEY, []);
+    let deferredPrompt = null;
+
+    function getPrepayForDate(dateStr) {
+      return prepayments
+        .filter(p => p.date === dateStr)
+        .reduce((sum, p) => sum + Number(p.amount), 0);
+    }
+
+    function totalPrepaid() {
+      return prepayments.reduce((sum, p) => sum + Number(p.amount), 0);
+    }
+
+    function calculateProjectedSchedule() {
+      let balance = INITIAL_AMOUNT;
+      return fullData.map((item) => {
+        const prepay = getPrepayForDate(item.date);
+        const projectedInterest = Math.max(0, +(balance * item.monthlyRate).toFixed(2));
+        const projectedPrincipal = Math.min(item.principal, balance);
+        const newTotal = +(projectedPrincipal + projectedInterest).toFixed(2);
+        const balanceAfter = Math.max(0, +(balance - projectedPrincipal - prepay).toFixed(2));
+
+        const row = {
+          ...item,
+          prepay,
+          projectedInterest,
+          projectedTotal: newTotal,
+          remainingAfterProjected: balanceAfter
+        };
+
+        balance = balanceAfter;
+        return row;
+      });
+    }
+
+    function totalBaseInterest() {
+      return fullData.reduce((sum, item) => sum + item.interest, 0);
+    }
+
+    function totalProjectedInterest(schedule) {
+      return schedule.reduce((sum, item) => sum + item.projectedInterest, 0);
+    }
+
+    function paymentStatus(item) {
+      if (paidMap[item.id]) return "paid";
+      const now = new Date();
+      const d = parseDate(item.date);
+      const startToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+      const itemDay = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+      const diffDays = Math.floor((itemDay - startToday) / 86400000);
+
+      if (diffDays < 0) return "overdue";
+      if (diffDays === 0) return "today";
+      if (diffDays <= 7) return "soon";
+      return "planned";
+    }
+
+    function statusLabel(status) {
+      if (status === "paid") return "Сплачено";
+      if (status === "overdue") return "Прострочено";
+      if (status === "today") return "Сьогодні";
+      if (status === "soon") return "Скоро";
+      return "Заплановано";
+    }
+
+    function statusBadgeClass(status) {
+      if (status === "paid") return "badge-paid";
+      if (status === "overdue") return "badge-overdue";
+      if (status === "today") return "badge-today";
+      if (status === "soon") return "badge-soon";
+      return "badge-planned";
+    }
+
+    function rowStatusClass(status) {
+      if (status === "paid") return "paid-row";
+      if (status === "overdue") return "overdue-row";
+      if (status === "today") return "current-row";
+      if (status === "soon") return "soon-row";
+      return "";
+    }
+
+    function currentPaymentId(schedule) {
+      const preferred = schedule.find(item => {
+        const st = paymentStatus(item);
+        return st === "today" || st === "soon" || st === "overdue";
+      });
+      if (preferred) return preferred.id;
+
+      const firstUnpaid = schedule.find(item => !paidMap[item.id]);
+      return firstUnpaid ? firstUnpaid.id : null;
+    }
+
+    function calculateStats(schedule) {
+      const paidItems = schedule.filter(item => paidMap[item.id]);
+      const unpaidItems = schedule.filter(item => !paidMap[item.id]);
+
+      const paidTotal = paidItems.reduce((sum, item) => sum + item.projectedTotal + item.prepay, 0);
+      const paidPrincipal = paidItems.reduce((sum, item) => sum + item.principal + item.prepay, 0);
+      const paidInterest = paidItems.reduce((sum, item) => sum + item.projectedInterest, 0);
+
+      const lastPaid = [...paidItems].pop();
+      const remainingPrincipal = lastPaid
+        ? lastPaid.remainingAfterProjected
+        : INITIAL_AMOUNT - totalPrepaid();
+
+      const remainingTotal = unpaidItems.reduce((sum, item) => sum + item.projectedTotal, 0);
+      const progress = ((INITIAL_AMOUNT - Math.max(remainingPrincipal, 0)) / INITIAL_AMOUNT) * 100;
+      const nextPayment = unpaidItems[0];
+
+      return {
+        paidTotal,
+        paidPrincipal,
+        paidInterest,
+        remainingPrincipal: Math.max(0, remainingPrincipal),
+        remainingTotal,
+        paidMonths: paidItems.length,
+        totalMonths: schedule.length,
+        progress,
+        nextPayment
+      };
+    }
+
+    function renderSummary(schedule) {
+      const stats = calculateStats(schedule);
+      const baseInterest = totalBaseInterest();
+      const projectedInterest = totalProjectedInterest(schedule);
+      const saved = Math.max(0, baseInterest - projectedInterest);
+
+      document.getElementById("initialAmount").textContent = formatMoney(INITIAL_AMOUNT);
+      document.getElementById("remainingPrincipal").textContent = formatMoney(stats.remainingPrincipal);
+      document.getElementById("paidTotal").textContent = formatMoney(stats.paidTotal);
+      document.getElementById("paidPrincipal").textContent = formatMoney(stats.paidPrincipal);
+      document.getElementById("paidInterest").textContent = formatMoney(stats.paidInterest);
+      document.getElementById("remainingTotal").textContent = formatMoney(stats.remainingTotal);
+      document.getElementById("paidMonths").textContent = `${stats.paidMonths} / ${stats.totalMonths}`;
+      document.getElementById("nextPayment").textContent = stats.nextPayment
+        ? `${stats.nextPayment.date} • ${formatMoney(stats.nextPayment.projectedTotal)}`
+        : "Кредит погашено";
+
+      document.getElementById("progressText").textContent = `${Math.min(stats.progress, 100).toFixed(2)}%`;
+      document.getElementById("progressFill").style.width = `${Math.min(stats.progress, 100)}%`;
+
+      document.getElementById("baseInterestTotal").textContent = formatMoney(baseInterest);
+      document.getElementById("forecastInterestTotal").textContent = formatMoney(projectedInterest);
+      document.getElementById("savedInterest").textContent = formatMoney(saved);
+      document.getElementById("prepaidTotal").textContent = formatMoney(totalPrepaid());
+    }
+
+    function getFilteredSchedule(schedule) {
+      const filter = (document.getElementById("searchInput").value || "").toLowerCase();
+      const unpaidOnly = document.getElementById("unpaidOnly").checked;
+      const sortField = document.getElementById("sortField").value;
+      const sortDirection = document.getElementById("sortDirection").value;
+
+      const data = schedule.filter(item => {
+        const matchesSearch = item.date.toLowerCase().includes(filter);
+        const matchesUnpaid = unpaidOnly ? !paidMap[item.id] : true;
+        return matchesSearch && matchesUnpaid;
+      });
+
+      data.sort((a, b) => {
+        let x, y;
+        if (sortField === "date") {
+          x = parseDate(a.date).getTime();
+          y = parseDate(b.date).getTime();
+        } else {
+          x = a[sortField];
+          y = b[sortField];
+        }
+        return sortDirection === "asc" ? x - y : y - x;
+      });
+
+      return data;
+    }
+
+    function renderTable(schedule) {
+      const tbody = document.getElementById("paymentsTable");
+      tbody.innerHTML = "";
+      const currentId = currentPaymentId(schedule);
+      const data = getFilteredSchedule(schedule);
+
+      data.forEach(item => {
+        const status = paymentStatus(item);
+        const tr = document.createElement("tr");
+        const rowClass = rowStatusClass(status);
+        if (rowClass) tr.classList.add(rowClass);
+        if (item.id === currentId) tr.classList.add("current-row");
+
+        tr.innerHTML = `
+          <td>
+            <input type="checkbox" class="pay-checkbox" data-id="${item.id}" ${paidMap[item.id] ? "checked" : ""} />
+          </td>
+          <td><span class="status-badge ${statusBadgeClass(status)}">${statusLabel(status)}</span></td>
+          <td>${item.date}</td>
+          <td>${formatMoney(item.principal)}</td>
+          <td>${formatMoney(item.interest)}</td>
+          <td>${formatMoney(item.projectedInterest)}</td>
+          <td>${formatMoney(item.total)}</td>
+          <td>${formatMoney(item.projectedTotal)}</td>
+          <td>${formatMoney(item.remainingAfterProjected)}</td>
+          <td>${item.prepay ? formatMoney(item.prepay) : "—"}</td>
+          <td>
+            <input
+              class="note-input"
+              type="text"
+              placeholder="Нотатка..."
+              data-note-id="${item.id}"
+              value="${(notesMap[item.id] || "").replace(/"/g, "&quot;")}"
+            />
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      document.querySelectorAll(".pay-checkbox").forEach(checkbox => {
+        checkbox.addEventListener("change", e => {
+          const id = Number(e.target.dataset.id);
+          if (e.target.checked) paidMap[id] = true;
+          else delete paidMap[id];
+          saveJSON(STORAGE_KEY, paidMap);
+          renderAll();
+        });
+      });
+
+      document.querySelectorAll(".note-input").forEach(input => {
+        input.addEventListener("input", e => {
+          const id = Number(e.target.dataset.noteId);
+          const value = e.target.value.trim();
+          if (value) notesMap[id] = value;
+          else delete notesMap[id];
+          saveJSON(NOTES_KEY, notesMap);
+        });
+      });
+    }
+
+    function renderChart(schedule) {
+      const container = document.getElementById("scheduleChart");
+      container.innerHTML = "";
+      const maxTotal = Math.max(...schedule.map(item => item.projectedTotal));
+      const currentId = currentPaymentId(schedule);
+
+      schedule.forEach(item => {
+        const principalHeight = (item.principal / maxTotal) * 230;
+        const interestHeight = (item.projectedInterest / maxTotal) * 230;
+
+        const group = document.createElement("div");
+        group.className = "bar-group";
+        if (paidMap[item.id]) group.classList.add("done");
+        if (item.id === currentId) group.classList.add("current");
+
+        group.innerHTML = `
+          <div class="bar-principal" style="height:${principalHeight}px"></div>
+          <div class="bar-interest" style="height:${interestHeight}px"></div>
+          <div class="bar-label">${item.date.slice(3)}</div>
+        `;
+
+        const note = notesMap[item.id] ? `\nНотатка: ${notesMap[item.id]}` : "";
+        const prepayText = item.prepay ? `\nДострокове: ${formatMoney(item.prepay)}` : "";
+        group.title = `${item.date}
+Тіло: ${formatMoney(item.principal)}
+Перерах. %: ${formatMoney(item.projectedInterest)}
+Нова сума: ${formatMoney(item.projectedTotal)}
+Залишок після: ${formatMoney(item.remainingAfterProjected)}${prepayText}${note}`;
+
+        container.appendChild(group);
+      });
+    }
+
+    function renderPrepayList() {
+      const el = document.getElementById("prepayList");
+      if (!prepayments.length) {
+        el.innerHTML = '<span class="muted">Ще немає дострокових платежів.</span>';
+        return;
+      }
+
+      const sorted = [...prepayments].sort((a, b) => new Date(a.rawDate) - new Date(b.rawDate));
+      el.innerHTML = sorted.map((item, index) => `
+        <div class="pill" style="justify-content:space-between; width:100%; margin-bottom:8px;">
+          <span>${item.date} — <strong>${formatMoney(item.amount)}</strong></span>
+          <button class="btn btn-danger" style="min-height:36px; padding:6px 10px;" onclick="removePrepay(${index})">Видалити</button>
+        </div>
+      `).join("");
+    }
+
+    function initCalendarSelectors() {
+      const monthSelect = document.getElementById("calendarMonth");
+      const yearSelect = document.getElementById("calendarYear");
+      const now = new Date();
+
+      const months = ["Січень","Лютий","Березень","Квітень","Травень","Червень","Липень","Серпень","Вересень","Жовтень","Листопад","Грудень"];
+      monthSelect.innerHTML = months.map((m, i) => `<option value="${i}">${m}</option>`).join("");
+
+      const years = [...new Set(fullData.map(x => parseDate(x.date).getFullYear()))];
+      yearSelect.innerHTML = years.map(y => `<option value="${y}">${y}</option>`).join("");
+
+      monthSelect.value = now.getMonth();
+      yearSelect.value = now.getFullYear();
+
+      if (!years.includes(now.getFullYear())) {
+        monthSelect.value = parseDate(fullData[0].date).getMonth();
+        yearSelect.value = parseDate(fullData[0].date).getFullYear();
+      }
+    }
+
+    function renderCalendar(schedule) {
+      const grid = document.getElementById("calendarGrid");
+      const month = Number(document.getElementById("calendarMonth").value);
+      const year = Number(document.getElementById("calendarYear").value);
+      const weekdays = ["Пн","Вт","Ср","Чт","Пт","Сб","Нд"];
+
+      const firstDay = new Date(year, month, 1);
+      const firstWeekday = (firstDay.getDay() + 6) % 7;
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+      const map = new Map();
+      schedule.forEach(item => {
+        const d = parseDate(item.date);
+        if (d.getMonth() === month && d.getFullYear() === year) {
+          map.set(d.getDate(), item);
+        }
+      });
+
+      grid.innerHTML = weekdays.map(w => `<div class="weekday">${w}</div>`).join("");
+
+      for (let i = 0; i < firstWeekday; i++) {
+        grid.innerHTML += `<div class="calendar-day empty"></div>`;
+      }
+
+      for (let day = 1; day <= daysInMonth; day++) {
+        const item = map.get(day);
+        if (!item) {
+          grid.innerHTML += `
+            <div class="calendar-day status-planned">
+              <div class="day-num">${day}</div>
+              <div class="day-text">—</div>
+            </div>
+          `;
+          continue;
+        }
+
+        const status = paymentStatus(item);
+        const statusClass =
+          status === "overdue" ? "status-overdue" :
+          status === "today" ? "status-today" :
+          status === "soon" ? "status-soon" :
+          status === "paid" ? "status-paid" : "status-planned";
+
+        grid.innerHTML += `
+          <div class="calendar-day ${statusClass}" title="${item.date} • ${formatMoney(item.projectedTotal)}">
+            <div class="day-num">${day}</div>
+            <div class="day-text">${statusLabel(status)}
+${formatMoney(item.projectedTotal)}</div>
+          </div>
+        `;
+      }
+    }
+
+    function addPrepayment() {
+      const rawDate = document.getElementById("prepayDate").value;
+      const amount = Number(document.getElementById("prepayAmount").value);
+
+      if (!rawDate || !amount || amount <= 0) {
+        alert("Вкажи дату і суму дострокового погашення");
+        return;
+      }
+
+      prepayments.push({
+        rawDate,
+        date: inputDateToDisplay(rawDate),
+        amount: Number(amount.toFixed(2))
+      });
+
+      saveJSON(PREPAY_KEY, prepayments);
+      document.getElementById("prepayAmount").value = "";
+      renderAll();
+    }
+
+    function removePrepay(index) {
+      prepayments.splice(index, 1);
+      saveJSON(PREPAY_KEY, prepayments);
+      renderAll();
+    }
+
+    window.removePrepay = removePrepay;
+
+    function markTillToday() {
+      const now = new Date();
+      fullData.forEach(item => {
+        if (parseDate(item.date) <= now) paidMap[item.id] = true;
+      });
+      saveJSON(STORAGE_KEY, paidMap);
+      renderAll();
+    }
+
+    function exportState() {
+      const payload = {
+        paidMap,
+        notesMap,
+        prepayments,
+        theme: loadTheme(),
+        exportedAt: new Date().toISOString()
+      };
+
+      const
