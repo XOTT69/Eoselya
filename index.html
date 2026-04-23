@@ -3,17 +3,26 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>єОселя — Трекер іпотеки</title>
+  <title>єОселя — Трекер іпотеки v2</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div class="app">
     <header class="topbar">
       <div>
-        <h1>єОселя — трекер платежів</h1>
-        <p class="subtitle">1 000 000 грн • 7% річних • 20 років</p>
+        <h1>єОселя — трекер платежів v2</h1>
+        <p class="subtitle">1 000 000 грн • 7% річних • 20 років • GitHub Pages</p>
       </div>
-      <button id="resetPaidBtn" class="danger-btn">Скинути відмітки</button>
+
+      <div class="topbar-actions">
+        <button id="markTillTodayBtn" class="primary-btn">Позначити до сьогодні</button>
+        <button id="exportBtn" class="secondary-btn">Експорт JSON</button>
+        <label class="file-btn">
+          Імпорт JSON
+          <input type="file" id="importInput" accept="application/json" hidden />
+        </label>
+        <button id="resetPaidBtn" class="danger-btn">Скинути все</button>
+      </div>
     </header>
 
     <section class="summary-grid">
@@ -67,6 +76,8 @@
         <div class="legend">
           <span><i class="legend-box principal"></i> Тіло</span>
           <span><i class="legend-box interest"></i> Відсотки</span>
+          <span><i class="legend-box done"></i> Сплачено</span>
+          <span><i class="legend-box current"></i> Поточний місяць</span>
         </div>
       </div>
       <div id="scheduleChart" class="schedule-chart"></div>
@@ -75,7 +86,13 @@
     <section class="table-card">
       <div class="section-title-row with-tools">
         <h2>Графік платежів</h2>
-        <input type="text" id="searchInput" placeholder="Пошук по даті..." />
+        <div class="filters">
+          <input type="text" id="searchInput" placeholder="Пошук по даті..." />
+          <label class="toggle">
+            <input type="checkbox" id="unpaidOnly" />
+            <span>Тільки несплачені</span>
+          </label>
+        </div>
       </div>
 
       <div class="table-wrap">
@@ -88,6 +105,7 @@
               <th>Погашення %</th>
               <th>Сума</th>
               <th>Залишок тіла</th>
+              <th>Нотатка</th>
             </tr>
           </thead>
           <tbody id="paymentsTable"></tbody>
