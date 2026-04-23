@@ -1,7 +1,7 @@
-const STORAGE_PAID = "eoselia_paid_modern";
-const STORAGE_DATES = "eoselia_dates_modern";
-const STORAGE_NOTES = "eoselia_notes_modern";
-const STORAGE_THEME = "eoselia_theme_modern";
+const STORAGE_PAID = "eoselia_paid_firststyle";
+const STORAGE_DATES = "eoselia_dates_firststyle";
+const STORAGE_NOTES = "eoselia_notes_firststyle";
+const STORAGE_THEME = "eoselia_theme_firststyle";
 
 let paidMap = JSON.parse(localStorage.getItem(STORAGE_PAID) || "{}");
 let paymentDates = JSON.parse(localStorage.getItem(STORAGE_DATES) || "{}");
@@ -70,7 +70,7 @@ function getStatusBadge(status) {
 function getRowClass(status) {
   if (status === "paid") return "paid-row";
   if (status === "overdue") return "overdue-row";
-  if (status === "today") return "today-row";
+  if (status === "today") return "current-row";
   if (status === "soon") return "soon-row";
   return "";
 }
@@ -108,48 +108,46 @@ function renderSummary(rows) {
   const paidInterest = paidRows.reduce((s, r) => s + r.interest, 0);
   const paidPrincipal = paidRows.reduce((s, r) => s + r.principal, 0);
   const remainingPrincipal = Math.max(0, INITIAL_AMOUNT - paidPrincipal);
-  const nextUnpaid = rows.find(r => !paidMap[r.id]);
+  const nextPayment = rows.find(r => !paidMap[r.id]);
   const progress = ((INITIAL_AMOUNT - remainingPrincipal) / INITIAL_AMOUNT) * 100;
 
   document.getElementById("initialAmount").textContent = formatMoney(INITIAL_AMOUNT);
   document.getElementById("remainingPrincipal").textContent = formatMoney(remainingPrincipal);
   document.getElementById("paidTotal").textContent = formatMoney(paidTotal);
+  document.getElementById("paidPrincipal").textContent = formatMoney(paidPrincipal);
   document.getElementById("paidInterest").textContent = formatMoney(paidInterest);
-  document.getElementById("statusSummary").textContent = nextUnpaid ? getStatusLabel(getStatus(nextUnpaid)) : "Закрито";
-  document.getElementById("nextPaymentInfo").textContent = nextUnpaid ? `${nextUnpaid.date} • ${formatMoney(nextUnpaid.total)}` : "Немає";
-  document.getElementById("paidMonthsInfo").textContent = `${paidRows.length} / ${rows.length}`;
-  document.getElementById("progressInfo").textContent = `${progress.toFixed(2)}%`;
-  document.getElementById("progressPercent").textContent = `${progress.toFixed(2)}%`;
+  document.getElementById("paidMonths").textContent = `${paidRows.length} / ${rows.length}`;
+  document.getElementById("nextPayment").textContent = nextPayment ? `${nextPayment.date} • ${formatMoney(nextPayment.total)}` : "Кредит погашено";
+  document.getElementById("progressText").textContent = `${progress.toFixed(2)}%`;
+  document.getElementById("progressTextTop").textContent = `${progress.toFixed(2)}%`;
   document.getElementById("progressFill").style.width = `${Math.min(progress, 100)}%`;
 }
 
 function renderTable(rows) {
-  const tbody = document.getElementById("tbody");
+  const tbody = document.getElementById("paymentsTable");
   tbody.innerHTML = "";
 
-  const filtered = getFilteredRows(rows);
-
-  filtered.forEach(row => {
+  getFilteredRows(rows).forEach(row => {
     const status = getStatus(row);
     const tr = document.createElement("tr");
     const cls = getRowClass(status);
     if (cls) tr.classList.add(cls);
 
     tr.innerHTML = `
-      <td><input type="checkbox" data-id="${row.id}" ${paidMap[row.id] ? "checked" : ""}></td>
+      <td><input type="checkbox" class="pay-checkbox" data-id="${row.id}" ${paidMap[row.id] ? "checked" : ""}></td>
       <td><span class="status-badge ${getStatusBadge(status)}">${getStatusLabel(status)}</span></td>
-      <td><input type="date" data-date-id="${row.id}" value="${paymentDates[row.id] || ""}"></td>
+      <td><input type="date" class="paydate-input" data-date-id="${row.id}" value="${paymentDates[row.id] || ""}"></td>
       <td>${row.date}</td>
       <td>${formatMoney(row.principal)}</td>
       <td>${formatMoney(row.interest)}</td>
       <td>${formatMoney(row.total)}</td>
       <td>${formatMoney(row.remainingAfter)}</td>
-      <td><input class="note-input" type="text" data-note-id="${row.id}" value="${notesMap[row.id] || ""}" placeholder="Нотатка"></td>
+      <td><input type="text" class="note-input" data-note-id="${row.id}" value="${notesMap[row.id] || ""}" placeholder="Нотатка..."></td>
     `;
     tbody.appendChild(tr);
   });
 
-  document.querySelectorAll('input[type="checkbox"][data-id]').forEach(el => {
+  document.querySelectorAll(".pay-checkbox").forEach(el => {
     el.addEventListener("change", e => {
       const id = e.target.dataset.id;
       if (e.target.checked) {
@@ -163,7 +161,7 @@ function renderTable(rows) {
     });
   });
 
-  document.querySelectorAll('input[type="date"][data-date-id]').forEach(el => {
+  document.querySelectorAll(".paydate-input").forEach(el => {
     el.addEventListener("change", e => {
       const id = e.target.dataset.dateId;
       paymentDates[id] = e.target.value;
@@ -173,37 +171,13 @@ function renderTable(rows) {
     });
   });
 
-  document.querySelectorAll('input[type="text"][data-note-id]').forEach(el => {
+  document.querySelectorAll(".note-input").forEach(el => {
     el.addEventListener("input", e => {
       const id = e.target.dataset.noteId;
       notesMap[id] = e.target.value;
       saveState();
     });
   });
-}
-
-function markTillToday() {
-  const rows = buildRows();
-  const now = new Date();
-  rows.forEach(r => {
-    if (parseDate(r.date) <= now) {
-      paidMap[r.id] = true;
-      if (!paymentDates[r.id]) paymentDates[r.id] = todayInput();
-    }
-  });
-  saveState();
-  render();
-}
-
-function resetAll() {
-  if (!confirm("Скинути всі відмітки, дати й нотатки?")) return;
-  paidMap = {};
-  paymentDates = {};
-  notesMap = {};
-  localStorage.removeItem(STORAGE_PAID);
-  localStorage.removeItem(STORAGE_DATES);
-  localStorage.removeItem(STORAGE_NOTES);
-  render();
 }
 
 function exportCSV(rows) {
@@ -244,18 +218,45 @@ function exportCSV(rows) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = "eoselia-dashboard.csv";
+  a.download = "eoselia-tracker.csv";
   a.click();
   URL.revokeObjectURL(url);
 }
 
+function markTillToday() {
+  const rows = buildRows();
+  const now = new Date();
+  rows.forEach(r => {
+    if (parseDate(r.date) <= now) {
+      paidMap[r.id] = true;
+      if (!paymentDates[r.id]) paymentDates[r.id] = todayInput();
+    }
+  });
+  saveState();
+  render();
+}
+
+function resetAll() {
+  if (!confirm("Скинути всі відмітки, дати та нотатки?")) return;
+  paidMap = {};
+  paymentDates = {};
+  notesMap = {};
+  localStorage.removeItem(STORAGE_PAID);
+  localStorage.removeItem(STORAGE_DATES);
+  localStorage.removeItem(STORAGE_NOTES);
+  render();
+}
+
 function applyTheme(theme) {
-  document.documentElement.classList.toggle("light", theme === "light");
+  document.documentElement.setAttribute("data-theme", theme);
   localStorage.setItem(STORAGE_THEME, theme);
+  document.getElementById("themeToggleBtn").textContent =
+    theme === "dark" ? "☀️ Світла тема" : "🌙 Темна тема";
+  document.getElementById("themeColorMeta").setAttribute("content", theme === "dark" ? "#0f1115" : "#f5f6f8");
 }
 
 function toggleTheme() {
-  const current = localStorage.getItem(STORAGE_THEME) || "dark";
+  const current = localStorage.getItem(STORAGE_THEME) || "light";
   applyTheme(current === "dark" ? "light" : "dark");
 }
 
@@ -265,14 +266,14 @@ function render() {
   renderTable(rows);
 }
 
-document.getElementById("markTodayBtn").addEventListener("click", markTillToday);
-document.getElementById("resetBtn").addEventListener("click", resetAll);
+document.getElementById("themeToggleBtn").addEventListener("click", toggleTheme);
+document.getElementById("markTillTodayBtn").addEventListener("click", markTillToday);
 document.getElementById("exportCsvBtn").addEventListener("click", () => exportCSV(buildRows()));
-document.getElementById("themeBtn").addEventListener("click", toggleTheme);
+document.getElementById("resetPaidBtn").addEventListener("click", resetAll);
 document.getElementById("searchInput").addEventListener("input", render);
 document.getElementById("unpaidOnly").addEventListener("change", render);
 document.getElementById("sortField").addEventListener("change", render);
 document.getElementById("sortDirection").addEventListener("change", render);
 
-applyTheme(localStorage.getItem(STORAGE_THEME) || "dark");
+applyTheme(localStorage.getItem(STORAGE_THEME) || "light");
 render();
